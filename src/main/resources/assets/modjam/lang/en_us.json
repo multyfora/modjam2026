@@ -1,0 +1,13 @@
+{
+  "itemGroup.modjam": "Example Mod Tab",
+  "block.modjam.example_block": "Example Block",
+  "item.modjam.example_item": "Example Item",
+
+  "modjam.configuration.title": "modjam Configs",
+  "modjam.configuration.section.modjam.common.toml": "modjam Configs",
+  "modjam.configuration.section.modjam.common.toml.title": "modjam Configs",
+  "modjam.configuration.items": "Item List",
+  "modjam.configuration.logDirtBlock": "Log Dirt Block",
+  "modjam.configuration.magicNumberIntroduction": "Magic Number Text",
+  "modjam.configuration.magicNumber": "Magic Number"
+}
