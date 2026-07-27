@@ -1,6 +1,6 @@
 # Blender 4.5.2 LTS
 # www.blender.org
-mtllib anti-prism.mtl
+mtllib brightest.mtl
 o a
 v 0.195949 0.002727 -0.486771
 v 0.204775 0.002927 -0.510160

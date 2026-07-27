@@ -1,6 +1,7 @@
 package net.multyfora.modjam.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -40,9 +41,25 @@ public class ItemActivationManager {
 
         float xOffset = (float) Math.sin(progress * Math.PI * 4) * 1.2f;
 
+        float z;
+        if (progress < 0.125f) {
+            float t = progress / 0.125f;
+            float easeOut = 1.0f - (1.0f - t) * (1.0f - t);
+            z = -3.0f + easeOut * 2.0f;
+        } else {
+            float t = (progress - 0.125f) / 0.875f;
+            z = -1.0f - t * 1.5f;
+        }
+
+        float yBob = (float) Math.sin(progress * Math.PI * 6) * 0.2f;
+
+        float scale = 0.55f + (float) Math.sin(progress * Math.PI * 5) * 0.08f;
+
         PoseStack poseStack = new PoseStack();
-        poseStack.translate(xOffset, 0.0, -2.5);
-        poseStack.scale(0.6f, 0.6f, 0.6f);
+        poseStack.translate(xOffset, yBob, z);
+        poseStack.mulPose(Axis.ZP.rotationDegrees((float) Math.sin(progress * Math.PI * 4) * 4.0f));
+        poseStack.mulPose(Axis.XP.rotationDegrees((float) Math.sin(progress * Math.PI * 3 + 1.0f) * 3.0f));
+        poseStack.scale(scale, scale, scale);
 
         gameRenderer.itemInHandRenderer.renderItem(
             mc.player,
