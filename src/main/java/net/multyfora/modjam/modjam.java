@@ -13,7 +13,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.multyfora.modjam.item.TalkingItem;
+import net.multyfora.modjam.item.BrightestItem;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -46,8 +46,7 @@ public class modjam {
     public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", p -> p.food(new FoodProperties.Builder()
             .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
 
-    public static final DeferredItem<Item> BRIGHTEST = ITEMS.registerItem("brightest",
-        props -> new TalkingItem(props, player -> Component.literal("\u2728 Brightest! \u2728")));
+    public static final DeferredItem<Item> BRIGHTEST = ITEMS.registerItem("brightest", BrightestItem::new);
 
     public static final DeferredBlock<Block> EXAMPLE_BLENDER_BLOCK = BLOCKS.registerSimpleBlock("example_blender_block", p -> p.mapColor(MapColor.STONE));
     public static final DeferredItem<BlockItem> EXAMPLE_BLENDER_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_blender_block", EXAMPLE_BLENDER_BLOCK);

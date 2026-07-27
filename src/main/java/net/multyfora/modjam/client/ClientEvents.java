@@ -12,5 +12,6 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         ItemActivationManager.getInstance().tick();
+        DialogueSystem.getInstance().tick();
     }
 }

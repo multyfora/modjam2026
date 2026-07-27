@@ -1,6 +1,5 @@
 package net.multyfora.modjam.item;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -9,14 +8,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.multyfora.modjam.client.ItemActivationManager;
 
-import java.util.function.Function;
-
-public class TalkingItem extends Item {
-    private final Function<Player, Component> messageProvider;
-
-    public TalkingItem(Properties properties, Function<Player, Component> messageProvider) {
+public class BrightestItem extends Item {
+    public BrightestItem(Properties properties) {
         super(properties);
-        this.messageProvider = messageProvider;
     }
 
     @Override
