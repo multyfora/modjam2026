@@ -5,7 +5,10 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "modjam.refmap.json",
   "client": [
-    "GameRendererMixin"
+    "GameRendererMixin",
+    "GameRendererAccessor",
+    "PostChainAccessor",
+    "PostPassAccessor"
   ],
   "injectors": {
     "defaultRequire": 0

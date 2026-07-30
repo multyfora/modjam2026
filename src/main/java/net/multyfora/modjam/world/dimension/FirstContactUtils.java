@@ -9,7 +9,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelData;
+import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.world.feature.FirstContactStructureFeature;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Set;
 
@@ -30,6 +32,8 @@ public class FirstContactUtils {
         player.getPersistentData().putBoolean(ENTERED_TAG.toString(), true);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
             SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
+
+        PacketDistributor.sendToPlayer(player, new FirstContactEnterPayload());
     }
 
     public static void leaveDimension(ServerPlayer player) {

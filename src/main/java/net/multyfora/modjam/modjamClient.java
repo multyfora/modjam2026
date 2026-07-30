@@ -12,7 +12,12 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.multyfora.modjam.client.DialogueSystem;
+import net.multyfora.modjam.client.FirstContactOverlay;
+import net.multyfora.modjam.client.FirstContactTransitionState;
+import net.multyfora.modjam.network.FirstContactEnterPayload;
+import net.multyfora.modjam.network.FirstContactLeavePayload;
 
 @Mod(value = modjam.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = modjam.MODID, value = Dist.CLIENT)
@@ -20,13 +25,22 @@ public class modjamClient {
     public modjamClient(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         container.getEventBus().addListener(modjamClient::onRegisterGuiLayers);
+        container.getEventBus().addListener(modjamClient::onRegisterClientPayloadHandlers);
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(
-            Identifier.parse(modjam.MODID + ":dialogue"),
+            Identifier.fromNamespaceAndPath(modjam.MODID, "dialogue"),
             (ModularHudLayer) () -> DialogueSystem.getInstance().getModularUI()
         );
+        FirstContactOverlay.register(event);
+    }
+
+    private static void onRegisterClientPayloadHandlers(RegisterClientPayloadHandlersEvent event) {
+        event.register(FirstContactLeavePayload.TYPE,
+            (payload, context) -> FirstContactTransitionState.getInstance().startLeaving());
+        event.register(FirstContactEnterPayload.TYPE,
+            (payload, context) -> FirstContactTransitionState.getInstance().startEntering());
     }
 
     @SubscribeEvent

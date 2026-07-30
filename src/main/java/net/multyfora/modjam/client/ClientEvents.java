@@ -13,5 +13,7 @@ public class ClientEvents {
     public static void onClientTick(ClientTickEvent.Post event) {
         ItemActivationManager.getInstance().tick();
         DialogueSystem.getInstance().tick();
+        FirstContactTransitionState.getInstance().tick();
+        FirstContactShader.setIntensity(FirstContactTransitionState.getInstance().getIntensity());
     }
 }

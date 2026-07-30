@@ -31,8 +31,11 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.multyfora.modjam.network.FirstContactLeavePayload;
+import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.world.dimension.FirstContactUtils;
 import net.multyfora.modjam.world.dimension.ModDimensions;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 @Mod(modjam.MODID)
 public class modjam {
@@ -65,6 +68,7 @@ public class modjam {
 
     public modjam(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(this::onRegisterPayloadHandlers);
 
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
@@ -76,6 +80,20 @@ public class modjam {
         modEventBus.addListener(this::addCreative);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+    }
+
+    private void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {
+        var registrar = event.registrar(MODID);
+
+        registrar.playToClient(
+            FirstContactLeavePayload.TYPE,
+            FirstContactLeavePayload.STREAM_CODEC
+        );
+
+        registrar.playToClient(
+            FirstContactEnterPayload.TYPE,
+            FirstContactEnterPayload.STREAM_CODEC
+        );
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

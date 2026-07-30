@@ -13,5 +13,8 @@
   "modjam.configuration.magicNumber": "Magic Number",
 
   "command.modjam.leave.success": "You have left the First Contact dimension.",
-  "command.modjam.leave.not_in_dimension": "You are not in the First Contact dimension."
+  "command.modjam.leave.not_in_dimension": "You are not in the First Contact dimension.",
+
+  "key.category.modjam": "ModJam",
+  "key.modjam.toggle_first_contact": "Toggle First Contact"
 }
