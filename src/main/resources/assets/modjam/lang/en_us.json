@@ -10,5 +10,8 @@
   "modjam.configuration.items": "Item List",
   "modjam.configuration.logDirtBlock": "Log Dirt Block",
   "modjam.configuration.magicNumberIntroduction": "Magic Number Text",
-  "modjam.configuration.magicNumber": "Magic Number"
+  "modjam.configuration.magicNumber": "Magic Number",
+
+  "command.modjam.leave.success": "You have left the First Contact dimension.",
+  "command.modjam.leave.not_in_dimension": "You are not in the First Contact dimension."
 }
