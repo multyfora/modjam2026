@@ -23,9 +23,10 @@ public class FirstContactUtils {
         var targetLevel = server.getLevel(ModDimensions.FIRST_CONTACT_LEVEL_KEY);
         if (targetLevel == null) return;
 
-        FirstContactStructureFeature.placeAtSpawn(targetLevel);
-
         var targetPos = new BlockPos(0, 2, 0);
+
+        FirstContactStructureFeature.placeAtSpawn(targetLevel, targetPos);
+        FirstContactStructureFeature.relightArea(targetLevel, targetPos.getX(), targetPos.getZ());
 
         teleportPlayer(player, targetLevel, targetPos);
         setRespawn(player, ModDimensions.FIRST_CONTACT_LEVEL_KEY, targetPos);

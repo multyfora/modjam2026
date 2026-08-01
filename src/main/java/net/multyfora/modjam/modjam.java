@@ -15,6 +15,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.multyfora.modjam.item.BrightestItem;
+import net.multyfora.modjam.item.JournalItem;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
@@ -53,6 +54,8 @@ public class modjam {
 
     public static final DeferredItem<Item> BRIGHTEST = ITEMS.registerItem("brightest", BrightestItem::new);
 
+    public static final DeferredItem<Item> JOURNAL_ITEM = ITEMS.registerItem("discovery_journal", JournalItem::new);
+
     public static final DeferredBlock<Block> EXAMPLE_BLENDER_BLOCK = BLOCKS.registerSimpleBlock("example_blender_block", p -> p.mapColor(MapColor.STONE));
     public static final DeferredItem<BlockItem> EXAMPLE_BLENDER_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_blender_block", EXAMPLE_BLENDER_BLOCK);
 
@@ -64,6 +67,7 @@ public class modjam {
                 output.accept(EXAMPLE_ITEM.get());
                 output.accept(EXAMPLE_BLENDER_BLOCK_ITEM.get());
                 output.accept(BRIGHTEST.get());
+                output.accept(JOURNAL_ITEM.get());
             }).build());
 
     public modjam(IEventBus modEventBus, ModContainer modContainer) {

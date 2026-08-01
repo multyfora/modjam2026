@@ -3,6 +3,7 @@
   "block.modjam.example_block": "Example Block",
   "item.modjam.example_item": "Example Item",
   "item.modjam.brightest": "Brightest",
+  "item.modjam.discovery_journal": "Discovery Journal",
 
   "modjam.configuration.title": "modjam Configs",
   "modjam.configuration.section.modjam.common.toml": "modjam Configs",
