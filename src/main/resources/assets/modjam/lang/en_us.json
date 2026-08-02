@@ -21,10 +21,10 @@
   "menu.modjam.brightest.refuse": "Refuse",
 
   "dialogue.modjam.brightest.1": "You stand among the graves of my people.",
-  "dialogue.modjam.brightest.2": "I have brought you to this forgotten world... because only you can help me.",
-  "dialogue.modjam.brightest.3": "The light they left behind still lingers, waiting to be awakened.",
-  "dialogue.modjam.brightest.4": "Awaken it...",
-  "dialogue.modjam.brightest.5": "And my people shall walk this world once more.",
+  "dialogue.modjam.brightest.2": "I have brought you to this {#FFE0B2}forgotten world{/}... because only {b}you{/} can help me.",
+  "dialogue.modjam.brightest.3": "The {#FFEE88}light{/} they left behind still lingers, waiting to be {pop}awakened{/}.",
+  "dialogue.modjam.brightest.4": "{shake:3}{#FFD700}Awaken{/} it...",
+  "dialogue.modjam.brightest.5": "And my {pop}people{/} shall walk this world once more.",
 
   "key.category.modjam": "ModJam"
 }
