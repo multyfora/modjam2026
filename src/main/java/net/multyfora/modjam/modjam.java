@@ -7,8 +7,13 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -16,6 +21,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.multyfora.modjam.item.BrightestItem;
 import net.multyfora.modjam.item.JournalItem;
+import net.multyfora.modjam.world.entity.BrightestEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
@@ -32,8 +38,12 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.multyfora.modjam.network.FirstContactLeavePayload;
+import net.multyfora.modjam.network.DialogueCompletePayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
+import net.multyfora.modjam.network.FirstContactLeavePayload;
+import net.multyfora.modjam.network.FirstContactTogglePayload;
+import net.multyfora.modjam.network.OpenBrightestMenuPayload;
+import net.multyfora.modjam.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.modjam.world.dimension.FirstContactUtils;
 import net.multyfora.modjam.world.dimension.ModDimensions;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -44,6 +54,7 @@ public class modjam {
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
+    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
     public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", p -> p.mapColor(MapColor.STONE));
@@ -55,6 +66,13 @@ public class modjam {
     public static final DeferredItem<Item> BRIGHTEST = ITEMS.registerItem("brightest", BrightestItem::new);
 
     public static final DeferredItem<Item> JOURNAL_ITEM = ITEMS.registerItem("discovery_journal", JournalItem::new);
+
+    public static final DeferredHolder<EntityType<?>, EntityType<BrightestEntity>> BRIGHTEST_ENTITY =
+        ENTITY_TYPES.register("brightest", () -> EntityType.Builder.of(BrightestEntity::new, MobCategory.MISC)
+            .sized(0.6f, 0.8f)
+            .setUpdateInterval(20)
+            .build(ResourceKey.create(Registries.ENTITY_TYPE,
+                Identifier.fromNamespaceAndPath(MODID, "brightest"))));
 
     public static final DeferredBlock<Block> EXAMPLE_BLENDER_BLOCK = BLOCKS.registerSimpleBlock("example_blender_block", p -> p.mapColor(MapColor.STONE));
     public static final DeferredItem<BlockItem> EXAMPLE_BLENDER_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_blender_block", EXAMPLE_BLENDER_BLOCK);
@@ -76,6 +94,7 @@ public class modjam {
 
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
+        ENTITY_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         ModDimensions.BIOMES.register(modEventBus);
 
@@ -97,6 +116,21 @@ public class modjam {
         registrar.playToClient(
             FirstContactEnterPayload.TYPE,
             FirstContactEnterPayload.STREAM_CODEC
+        );
+
+        registrar.playToClient(
+            OpenBrightestMenuPayload.TYPE,
+            OpenBrightestMenuPayload.STREAM_CODEC
+        );
+
+        registrar.playToServer(
+            DialogueCompletePayload.TYPE,
+            DialogueCompletePayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.player() instanceof ServerPlayer player) {
+                    FirstContactLeaveFlow.startLeaveSequence(player);
+                }
+            }
         );
     }
 
@@ -129,6 +163,8 @@ public class modjam {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (!FirstContactUtils.hasEnteredFirstContact(player)) {
                 FirstContactUtils.teleportToFirstContact(player);
+            } else if (player.level().dimension() == ModDimensions.FIRST_CONTACT_LEVEL_KEY) {
+                FirstContactUtils.ensureBrightest((ServerLevel) player.level(), player);
             }
         }
     }

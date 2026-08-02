@@ -16,6 +16,15 @@
   "command.modjam.leave.success": "You have left the First Contact dimension.",
   "command.modjam.leave.not_in_dimension": "You are not in the First Contact dimension.",
 
-  "key.category.modjam": "ModJam",
-  "key.modjam.toggle_first_contact": "Toggle First Contact"
+  "menu.modjam.brightest.title": "The Brightest",
+  "menu.modjam.brightest.talk": "Talk to it",
+  "menu.modjam.brightest.refuse": "Refuse",
+
+  "dialogue.modjam.brightest.1": "You stand among the graves of my people.",
+  "dialogue.modjam.brightest.2": "I have brought you to this forgotten world... because only you can help me.",
+  "dialogue.modjam.brightest.3": "The light they left behind still lingers, waiting to be awakened.",
+  "dialogue.modjam.brightest.4": "Awaken it...",
+  "dialogue.modjam.brightest.5": "And my people shall walk this world once more.",
+
+  "key.category.modjam": "ModJam"
 }

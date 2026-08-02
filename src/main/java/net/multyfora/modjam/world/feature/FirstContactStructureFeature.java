@@ -1,17 +1,12 @@
 package net.multyfora.modjam.world.feature;
 
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ThreadedLevelLightEngine;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.multyfora.modjam.modjam;
 
@@ -35,7 +30,6 @@ public class FirstContactStructureFeature {
 
     public static void relightArea(ServerLevel level, int ox, int oz) {
         var lightEngine = level.getLightEngine();
-        var pending = new ArrayList<CompletableFuture<?>>();
         int minChunkX = (ox - HALF_FLOOR_X) >> 4;
         int maxChunkX = (ox + HALF_FLOOR_X) >> 4;
         int minChunkZ = (oz - HALF_FLOOR_Z) >> 4;
@@ -43,14 +37,7 @@ public class FirstContactStructureFeature {
         for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
             for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
                 lightEngine.propagateLightSources(new ChunkPos(chunkX, chunkZ));
-                if (lightEngine instanceof ThreadedLevelLightEngine threaded
-                    && level.getChunkSource().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null) {
-                    pending.add(threaded.waitForPendingTasks(chunkX, chunkZ));
-                }
             }
-        }
-        if (!pending.isEmpty()) {
-            CompletableFuture.allOf(pending.toArray(new CompletableFuture[0])).join();
         }
     }
 

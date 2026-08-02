@@ -12,15 +12,20 @@ import dev.vfyjxf.taffy.style.FlexDirection;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class DialogueSystem {
     private static final DialogueSystem INSTANCE = new DialogueSystem();
     private static final int CHARS_PER_TICK = 2;
     private static final int HOLD_TICKS = 80;
 
     private boolean active;
+    private List<Component> queue = List.of();
+    private int queueIndex;
     private String fullText;
     private int displayedLength;
     private int ticksSinceComplete;
+    private Runnable onComplete;
 
     private Label label;
     private ModularUI mui;
@@ -31,8 +36,15 @@ public class DialogueSystem {
     }
 
     public void showDialogue(String text) {
+        playSequence(List.of(Component.literal(text)), null);
+    }
+
+    public void playSequence(List<Component> lines, Runnable onComplete) {
         ensureUI();
-        this.fullText = text;
+        this.queue = lines;
+        this.queueIndex = 0;
+        this.onComplete = onComplete;
+        this.fullText = lines.isEmpty() ? "" : lines.get(0).getString();
         this.displayedLength = 0;
         this.ticksSinceComplete = 0;
         this.active = true;
@@ -46,18 +58,41 @@ public class DialogueSystem {
             displayedLength = Math.min(displayedLength + CHARS_PER_TICK, fullText.length());
             label.setText(Component.literal(fullText.substring(0, displayedLength)));
         } else if (++ticksSinceComplete > HOLD_TICKS) {
-            clear();
+            advance();
+        }
+    }
+
+    private void advance() {
+        queueIndex++;
+        if (queueIndex < queue.size()) {
+            fullText = queue.get(queueIndex).getString();
+            displayedLength = 0;
+            ticksSinceComplete = 0;
+            label.setText(Component.empty());
+            return;
+        }
+        var callback = onComplete;
+        clear();
+        if (callback != null) {
+            callback.run();
         }
     }
 
     public void clear() {
         active = false;
+        queue = List.of();
+        queueIndex = 0;
         fullText = null;
         displayedLength = 0;
         ticksSinceComplete = 0;
+        onComplete = null;
         if (label != null) {
             label.setText(Component.empty());
         }
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     @Nullable

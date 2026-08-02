@@ -14,6 +14,7 @@ public class ClientEvents {
         ItemActivationManager.getInstance().tick();
         DialogueSystem.getInstance().tick();
         FirstContactTransitionState.getInstance().tick();
+        BrightestInteractionManager.getInstance().tick();
         FirstContactShader.setIntensity(FirstContactTransitionState.getInstance().getIntensity());
     }
 }
