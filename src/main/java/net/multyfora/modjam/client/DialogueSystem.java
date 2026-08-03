@@ -3,10 +3,12 @@ package net.multyfora.modjam.client;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
-import com.lowdragmc.lowdraglib2.gui.texture.ColorRectTexture;
+import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
+import com.lowdragmc.lowdraglib2.gui.texture.SDFRectTexture;
 import dev.vfyjxf.taffy.style.AlignItems;
 import dev.vfyjxf.taffy.style.AlignContent;
 import dev.vfyjxf.taffy.style.FlexDirection;
+import dev.vfyjxf.taffy.style.TaffyPosition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -22,6 +24,13 @@ public class DialogueSystem {
     private static final DialogueSystem INSTANCE = new DialogueSystem();
     private static final int CHARS_PER_TICK = 1;
     private static final int HOLD_TICKS = 80;
+
+    private static final int OUTER_GOLD = 0xFF6B4A20;
+    private static final int GOLD_BORDER = 0xFFD4A840;
+    private static final int INNER_STONE = 0xFF3A2410;
+    private static final int DARK_GOLD = 0xFFB8860B;
+    private static final int DIALOG_BG = 0xE2170803;
+    private static final int DIAMOND = 0xFFFFD700;
 
     private boolean active;
     private List<RichText> queue = List.of();
@@ -147,16 +156,50 @@ public class DialogueSystem {
         label.setFontSize(14);
         label.setLineSpacing(2);
 
+        UIElement panel = new UIElement()
+            .layout(l -> l
+                .widthPercent(100)
+                .flexDirection(FlexDirection.COLUMN)
+                .gapAll(7)
+                .paddingAll(12)
+            )
+            .style(s -> s.background(
+                SDFRectTexture.of(DIALOG_BG).setRadius(6f).setBorderColor(0x55D4A840)
+            ))
+            .addChild(ornament())
+            .addChild(label);
+
+        UIElement inner = new UIElement()
+            .layout(l -> l.widthPercent(100).paddingAll(2))
+            .style(s -> s.background(
+                SDFRectTexture.of(INNER_STONE).setRadius(8f).setBorderColor(DARK_GOLD)
+            ))
+            .addChild(panel);
+
+        UIElement halo = new UIElement()
+            .layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(-16).top(-16).right(-16).bottom(-16))
+            .style(s -> s.background(SDFRectTexture.of(0x38FFD700).setRadius(28f)));
+
+        UIElement bezel = new UIElement()
+            .layout(l -> l.widthPercent(100).paddingAll(3))
+            .style(s -> s.background(
+                SDFRectTexture.of(OUTER_GOLD).setRadius(12f).setBorderColor(GOLD_BORDER)
+            ))
+            .addChild(inner);
+
         UIElement dialogBox = new UIElement()
             .layout(l -> l
                 .widthPercent(70)
-                .paddingAll(12)
                 .marginBottom(30)
+                .flexDirection(FlexDirection.COLUMN)
             )
-            .style(s -> s
-                .background(new ColorRectTexture(0xCC111111))
-            )
-            .addChild(label);
+            .addChildren(halo, bezel);
+
+        float[] time = {0f};
+        dialogBox.addEventListener(UIEvents.TICK, e -> {
+            time[0] += 0.04f;
+            halo.style(s -> s.opacity(0.55f + 0.3f * (float) Math.sin(time[0] * 1.2f)));
+        });
 
         UIElement root = new UIElement()
             .layout(l -> l
@@ -170,5 +213,27 @@ public class DialogueSystem {
 
         mui = ModularUI.of(UI.of(root));
         uiBuilt = true;
+    }
+
+    private static UIElement ornament() {
+        var wrap = new UIElement()
+                .layout(l -> l.widthPercent(100).height(8)
+                        .flexDirection(FlexDirection.ROW).alignItems(AlignItems.CENTER));
+
+        var lineLeft = new UIElement()
+                .layout(l -> l.flex(1).height(1))
+                .style(s -> s.background(SDFRectTexture.of(DARK_GOLD).setRadius(0.5f)));
+
+        var diamond = new UIElement()
+                .layout(l -> l.width(5).height(5))
+                .style(s -> s.background(SDFRectTexture.of(DIAMOND).setRadius(1f)));
+        diamond.transform(t -> t.rotation(45f));
+
+        var lineRight = new UIElement()
+                .layout(l -> l.flex(1).height(1))
+                .style(s -> s.background(SDFRectTexture.of(DARK_GOLD).setRadius(0.5f)));
+
+        wrap.addChildren(lineLeft, diamond, lineRight);
+        return wrap;
     }
 }
