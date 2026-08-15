@@ -15,10 +15,12 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.multyfora.modjam.client.BrightestInteractionManager;
+import net.multyfora.modjam.client.DialogueEventClientHandler;
 import net.multyfora.modjam.client.DialogueSystem;
 import net.multyfora.modjam.client.FirstContactOverlay;
 import net.multyfora.modjam.client.FirstContactTransitionState;
 import net.multyfora.modjam.client.renderer.BrightestEntityRenderer;
+import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
 import net.multyfora.modjam.network.OpenBrightestMenuPayload;
@@ -48,6 +50,7 @@ public class modjamClient {
     private static void onRegisterClientPayloadHandlers(RegisterClientPayloadHandlersEvent event) {
         event.register(FirstContactLeavePayload.TYPE,
             (payload, context) -> {
+                DialogueEventClientHandler.getInstance().clear();
                 DialogueSystem.getInstance().clear();
                 FirstContactTransitionState.getInstance().startLeaving();
             });
@@ -55,6 +58,8 @@ public class modjamClient {
             (payload, context) -> FirstContactTransitionState.getInstance().startEntering());
         event.register(OpenBrightestMenuPayload.TYPE,
             (payload, context) -> BrightestInteractionManager.getInstance().openMenu());
+        event.register(DialogueEventStartPayload.TYPE,
+            (payload, context) -> DialogueEventClientHandler.getInstance().handle(payload));
     }
 
     @SubscribeEvent

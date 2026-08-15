@@ -9,6 +9,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.multyfora.modjam.modjam;
+import net.multyfora.modjam.dialogue.DialogueEventManager;
 import net.multyfora.modjam.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.modjam.world.dimension.ModDimensions;
 
@@ -32,6 +33,16 @@ public class ModJamCommands {
                     FirstContactLeaveFlow.startLeaveSequence(player);
                     context.getSource().sendSuccess(
                         () -> Component.translatable("command.modjam.leave.success"), true);
+                    return 1;
+                })
+            )
+            .then(Commands.literal("resetdialogues")
+                .requires(source -> source.getEntity() instanceof ServerPlayer)
+                .executes(context -> {
+                    var player = (ServerPlayer) context.getSource().getEntity();
+                    DialogueEventManager.resetPlayerProgress(player);
+                    context.getSource().sendSuccess(
+                        () -> Component.translatable("command.modjam.resetdialogues.success"), true);
                     return 1;
                 })
             )

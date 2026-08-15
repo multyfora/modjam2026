@@ -15,6 +15,9 @@
 
   "command.modjam.leave.success": "You have left the First Contact dimension.",
   "command.modjam.leave.not_in_dimension": "You are not in the First Contact dimension.",
+  "command.modjam.resetdialogues.success": "Dialogue event progress reset.",
+  "command.modjam.resetdialogues.failure": "Could not reset dialogue event progress.",
+  "subtitles.modjam.first_contact_music": "First Contact theme",
 
   "menu.modjam.brightest.title": "The Brightest",
   "menu.modjam.brightest.talk": "Talk to it",

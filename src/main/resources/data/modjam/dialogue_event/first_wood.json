@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "#minecraft:logs" }
+      ]
+    }
+  ],
+  "lines": [
+    "{#00FF00}lorem ipsum{/}",
+    "{#FFD700}wood{/}... im gay",
+    "come kiss me in my hot mouth"
+  ],
+  "once": true
+}

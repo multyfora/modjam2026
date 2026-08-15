@@ -11,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -32,13 +33,16 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.multyfora.modjam.dialogue.DialogueEventManager;
 import net.multyfora.modjam.network.DialogueCompletePayload;
+import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
 import net.multyfora.modjam.network.FirstContactTogglePayload;
@@ -56,6 +60,7 @@ public class modjam {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
+    public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
 
     public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", p -> p.mapColor(MapColor.STONE));
     public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
@@ -66,6 +71,11 @@ public class modjam {
     public static final DeferredItem<Item> BRIGHTEST = ITEMS.registerItem("brightest", BrightestItem::new);
 
     public static final DeferredItem<Item> JOURNAL_ITEM = ITEMS.registerItem("discovery_journal", JournalItem::new);
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> FIRST_CONTACT_MUSIC = SOUND_EVENTS.register(
+        "first_contact_music",
+        () -> SoundEvent.createVariableRangeEvent(Identifier.fromNamespaceAndPath(MODID, "first_contact_music"))
+    );
 
     public static final DeferredHolder<EntityType<?>, EntityType<BrightestEntity>> BRIGHTEST_ENTITY =
         ENTITY_TYPES.register("brightest", () -> EntityType.Builder.of(BrightestEntity::new, MobCategory.MISC)
@@ -96,9 +106,12 @@ public class modjam {
         ITEMS.register(modEventBus);
         ENTITY_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
+        SOUND_EVENTS.register(modEventBus);
         ModDimensions.BIOMES.register(modEventBus);
 
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(DialogueEventManager.getInstance());
+        NeoForge.EVENT_BUS.addListener(DialogueEventManager::onAddReloadListeners);
 
         modEventBus.addListener(this::addCreative);
 
@@ -121,6 +134,11 @@ public class modjam {
         registrar.playToClient(
             OpenBrightestMenuPayload.TYPE,
             OpenBrightestMenuPayload.STREAM_CODEC
+        );
+
+        registrar.playToClient(
+            DialogueEventStartPayload.TYPE,
+            DialogueEventStartPayload.STREAM_CODEC
         );
 
         registrar.playToServer(

@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.multyfora.modjam.client.dialogue.RichText;
 import net.multyfora.modjam.client.dialogue.RichTextElement;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +25,8 @@ public class DialogueSystem {
     private static final DialogueSystem INSTANCE = new DialogueSystem();
     private static final int CHARS_PER_TICK = 1;
     private static final int HOLD_TICKS = 80;
+    private static final int LEAD_TICKS = 12;
+    private static final int FADE_TICKS = 8;
 
     private static final int OUTER_GOLD = 0xFF6B4A20;
     private static final int GOLD_BORDER = 0xFFD4A840;
@@ -38,7 +41,11 @@ public class DialogueSystem {
     private String fullText;
     private int displayedLength;
     private int ticksSinceComplete;
+    private boolean leading;
+    private int leadTicks;
+    private int fadeTicks;
     private Runnable onComplete;
+    private Runnable onLineChange;
 
     private RichTextElement label;
     private ModularUI mui;
@@ -57,22 +64,31 @@ public class DialogueSystem {
     }
 
     public void playMarkup(List<String> lines, Runnable onComplete) {
+        playMarkup(lines, null, onComplete);
+    }
+
+    public void playMarkup(List<String> lines, Runnable onLineChange, Runnable onComplete) {
         List<RichText> richLines = lines.stream().map(RichText::parse).collect(Collectors.toList());
-        playRich(richLines, onComplete);
+        playRich(richLines, onLineChange, onComplete);
     }
 
     public void playSequence(List<Component> lines, Runnable onComplete) {
         List<RichText> richLines = lines.stream()
                 .map(component -> RichText.parse(component.getString()))
                 .collect(Collectors.toList());
-        playRich(richLines, onComplete);
+        playRich(richLines, null, onComplete);
     }
 
     public void playRich(List<RichText> lines, Runnable onComplete) {
+        playRich(lines, null, onComplete);
+    }
+
+    public void playRich(List<RichText> lines, Runnable onLineChange, Runnable onComplete) {
         ensureUI();
         this.queue = lines == null ? List.of() : List.copyOf(lines);
         this.queueIndex = 0;
         this.onComplete = onComplete;
+        this.onLineChange = onLineChange;
         startRich();
     }
 
@@ -80,6 +96,7 @@ public class DialogueSystem {
         this.fullText = queue.isEmpty() ? "" : queue.get(0).fullText();
         this.displayedLength = 0;
         this.ticksSinceComplete = 0;
+        this.fadeTicks = 0;
         this.active = true;
         label.setText(queue.isEmpty() ? RichText.EMPTY : queue.get(0));
         label.setRevealChars(0);
@@ -87,6 +104,9 @@ public class DialogueSystem {
 
     public void tick() {
         if (!active) return;
+        if (fadeTicks < FADE_TICKS) {
+            fadeTicks++;
+        }
 
         if (displayedLength < fullText.length()) {
             int next = Math.min(fullText.length(), displayedLength + CHARS_PER_TICK);
@@ -97,7 +117,17 @@ public class DialogueSystem {
             }
             displayedLength = next;
             label.setRevealChars(displayedLength);
-        } else if (++ticksSinceComplete > HOLD_TICKS) {
+        } else if (!leading && ++ticksSinceComplete > HOLD_TICKS) {
+            if (queueIndex + 1 < queue.size() && onLineChange != null) {
+                leading = true;
+                leadTicks = 0;
+                onLineChange.run();
+            } else {
+                advance();
+            }
+        }
+        if (leading && ++leadTicks > LEAD_TICKS) {
+            leading = false;
             advance();
         }
     }
@@ -131,7 +161,10 @@ public class DialogueSystem {
         fullText = null;
         displayedLength = 0;
         ticksSinceComplete = 0;
+        leading = false;
+        leadTicks = 0;
         onComplete = null;
+        onLineChange = null;
         if (label != null) {
             label.setText(RichText.EMPTY);
             label.setRevealChars(0);
@@ -198,7 +231,10 @@ public class DialogueSystem {
         float[] time = {0f};
         dialogBox.addEventListener(UIEvents.TICK, e -> {
             time[0] += 0.04f;
-            halo.style(s -> s.opacity(0.55f + 0.3f * (float) Math.sin(time[0] * 1.2f)));
+            float t = Mth.clamp((float) fadeTicks / FADE_TICKS, 0f, 1f);
+            float fade = 1f - (1f - t) * (1f - t) * (1f - t);
+            dialogBox.style(s -> s.opacity(fade));
+            halo.style(s -> s.opacity(fade * (0.55f + 0.3f * (float) Math.sin(time[0] * 1.2f))));
         });
 
         UIElement root = new UIElement()

@@ -3,6 +3,7 @@ package net.multyfora.modjam.mixin;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.multyfora.modjam.client.BrightestVisitationManager;
 import net.multyfora.modjam.client.ItemActivationManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,6 +27,11 @@ public class GameRendererMixin {
     )
     private void onAfterScreenEffects(DeltaTracker deltaTracker, CallbackInfo ci) {
         ItemActivationManager.getInstance().render(
+            (GameRenderer) (Object) this,
+            this.handAndScreenSubmitNodeStorage,
+            deltaTracker
+        );
+        BrightestVisitationManager.getInstance().render(
             (GameRenderer) (Object) this,
             this.handAndScreenSubmitNodeStorage,
             deltaTracker
