@@ -254,6 +254,7 @@ public class BrightestInteractionManager {
                 SDFRectTexture.of(0xCC3A2410).setRadius(6f).setBorderColor(DARK_GOLD)
         ));
         btn.buttonStyle(s -> s
+                .baseTexture(SDFRectTexture.of(0xCC3A2410).setRadius(6f).setBorderColor(DARK_GOLD))
                 .hoverTexture(SDFRectTexture.of(0xCC8B6914).setRadius(6f).setBorderColor(GOLD))
                 .pressedTexture(SDFRectTexture.of(0xCC5C3A00).setRadius(6f).setBorderColor(GLOW_BORDER)));
         btn.addEventListener(UIEvents.CLICK, e -> choose(talk));

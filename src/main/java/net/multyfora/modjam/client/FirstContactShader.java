@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -24,8 +25,10 @@ public class FirstContactShader {
 
     private static boolean loaded = false;
     private static float currentIntensity = 0.0f;
-    private static GpuBuffer mappableBuffer = null;
-    private static boolean bufferSwapped = false;
+    private static GpuBuffer transitionBuffer = null;
+    private static boolean transitionBufferSwapped = false;
+    private static GpuBuffer singularityBuffer = null;
+    private static boolean singularityBufferSwapped = false;
 
     public static void setIntensity(float intensity) {
         currentIntensity = intensity;
@@ -33,7 +36,13 @@ public class FirstContactShader {
 
     @SubscribeEvent
     public static void onFlipFrame(FlipFrameEvent event) {
-        if (currentIntensity <= 0.0f) {
+        SingularityDarknessManager manager = SingularityDarknessManager.getInstance();
+        var mc = Minecraft.getInstance();
+        CameraRenderState camera = mc.gameRenderer.gameRenderState().levelRenderState.cameraRenderState;
+        manager.updateScreenData(camera);
+
+        float singularityIntensity = manager.getIntensity();
+        if (currentIntensity <= 0.0f && singularityIntensity <= 0.0f) {
             clear();
             return;
         }
@@ -71,24 +80,46 @@ public class FirstContactShader {
 
         for (var pass : ((PostChainAccessor) chain).modjam$getPasses()) {
             var uniforms = ((PostPassAccessor) pass).modjam$getCustomUniforms();
-            if (!uniforms.containsKey("FirstContactConfig")) continue;
 
-            if (!bufferSwapped) {
-                ByteBuffer data = ByteBuffer.allocateDirect(16);
-                data.putFloat(0, currentIntensity);
-                mappableBuffer = RenderSystem.getDevice().createBuffer(
-                    () -> EFFECT_LOCATION + "/FirstContactConfig",
-                    GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_HINT_CLIENT_STORAGE | GpuBuffer.USAGE_MAP_WRITE,
-                    data
-                );
-                bufferSwapped = true;
-                modjam.LOGGER.info("Created mappable FirstContactConfig buffer");
+            if (uniforms.containsKey("FirstContactConfig")) {
+                if (!transitionBufferSwapped) {
+                    ByteBuffer data = ByteBuffer.allocateDirect(16);
+                    data.putFloat(0, currentIntensity);
+                    transitionBuffer = RenderSystem.getDevice().createBuffer(
+                        () -> EFFECT_LOCATION + "/FirstContactConfig",
+                        GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_HINT_CLIENT_STORAGE | GpuBuffer.USAGE_MAP_WRITE,
+                        data
+                    );
+                    transitionBufferSwapped = true;
+                    modjam.LOGGER.info("Created mappable FirstContactConfig buffer");
+                }
+
+                uniforms.put("FirstContactConfig", transitionBuffer);
+
+                try (var view = transitionBuffer.map(false, true)) {
+                    view.data().putFloat(0, currentIntensity);
+                }
             }
 
-            uniforms.put("FirstContactConfig", mappableBuffer);
+            if (uniforms.containsKey("SingularityConfig")) {
+                var manager = SingularityDarknessManager.getInstance();
+                if (!singularityBufferSwapped) {
+                    ByteBuffer data = ByteBuffer.allocateDirect(16);
+                    SingularityDarknessManager.writeSingularityConfig(data, manager);
+                    singularityBuffer = RenderSystem.getDevice().createBuffer(
+                        () -> EFFECT_LOCATION + "/SingularityConfig",
+                        GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_HINT_CLIENT_STORAGE | GpuBuffer.USAGE_MAP_WRITE,
+                        data
+                    );
+                    singularityBufferSwapped = true;
+                    modjam.LOGGER.info("Created mappable SingularityConfig buffer");
+                }
 
-            try (var view = mappableBuffer.map(false, true)) {
-                view.data().putFloat(0, currentIntensity);
+                uniforms.put("SingularityConfig", singularityBuffer);
+
+                try (var view = singularityBuffer.map(false, true)) {
+                    SingularityDarknessManager.writeSingularityConfig(view.data(), manager);
+                }
             }
         }
     }

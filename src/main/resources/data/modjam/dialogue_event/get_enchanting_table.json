@@ -1,0 +1,14 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "minecraft:enchanting_table" }
+      ]
+    }
+  ],
+  "lines": [
+    "whats an enchanting table?"
+  ],
+  "once": true
+}

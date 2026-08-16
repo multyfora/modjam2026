@@ -20,6 +20,13 @@
                         "type": "float",
                         "value": 0.0
                     }
+                ],
+                "SingularityConfig": [
+                    {
+                        "name": "Center",
+                        "type": "vec4",
+                        "value": [ 0.5, 0.5, 0.0, 0.0 ]
+                    }
                 ]
             }
         },

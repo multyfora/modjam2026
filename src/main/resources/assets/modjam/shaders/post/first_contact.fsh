@@ -11,6 +11,12 @@ layout(std140) uniform FirstContactConfig {
     float Intensity;
 };
 
+layout(std140) uniform SingularityConfig {
+    vec4 Center; // xy = screen uv of the crystal, z = darkness radius in uv, w = intensity
+};
+
+const float SINGULARITY_CORE_RATIO = 0.3125; // DARK_CORE / DARK_RADIUS (2.5 / 8)
+
 in vec2 texCoord;
 
 out vec4 fragColor;
@@ -42,6 +48,16 @@ void main() {
     color = mix(color, vec3(luma), clamp(I * dist * 0.6, 0.0, 1.0));
 
     color += (hash(texCoord * InSize + I * 100.0) - 0.5) * 0.05 * I;
+
+    float sI = clamp(Center.w, 0.0, 1.0);
+    if (sI > 0.001) {
+        float sR = max(Center.z, 0.0001);
+        float sD = distance(texCoord, Center.xy);
+        float dark = (1.0 - smoothstep(sR * SINGULARITY_CORE_RATIO, sR, sD)) * sI;
+        color *= (1.0 - dark * 0.97);
+        float sluma = dot(color, vec3(0.299, 0.587, 0.114));
+        color = mix(color, vec3(sluma * 0.05), dark);
+    }
 
     float flash = smoothstep(0.92, 1.0, I);
     color = mix(color, vec3(1.0), flash * 0.9);

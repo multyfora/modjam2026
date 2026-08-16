@@ -18,6 +18,7 @@ public class ClientEvents {
         FirstContactTransitionState.getInstance().tick();
         BrightestInteractionManager.getInstance().tick();
         FirstContactMusicManager.getInstance().tick();
+        SingularityDarknessManager.getInstance().tick();
         FirstContactShader.setIntensity(FirstContactTransitionState.getInstance().getIntensity());
     }
 }

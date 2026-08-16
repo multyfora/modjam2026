@@ -19,17 +19,23 @@ import net.multyfora.modjam.modjam;
 import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEnchantItemEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.resource.ListenerKey;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class DialogueEventManager extends SimplePreparableReloadListener<Map<Identifier, DialogueEventDefinition>> {
     private static final String FOLDER = "dialogue_event";
     private static final String PERSISTENCE_KEY = "modjam_dialogue_events";
+    private static final String TIMING_KEY = "modjam_dialogue_times";
     private static final int CHECK_INTERVAL = 4;
+
+    public static final Identifier ENCHANTING_TABLE_USED = Identifier.fromNamespaceAndPath(modjam.MODID, "enchanting_table_used");
+    public static final Identifier OVERWORLD_WELCOME = Identifier.fromNamespaceAndPath(modjam.MODID, "overworld_welcome");
 
     private static final DialogueEventManager INSTANCE = new DialogueEventManager();
 
@@ -50,6 +56,33 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
     @SubscribeEvent
     public void onServerTick(ServerTickEvent.Post event) {
         tickServer(event.getServer());
+    }
+
+    @SubscribeEvent
+    public void onPlayerEnchantItem(PlayerEnchantItemEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            player.closeContainer();
+            tryFire(player, ENCHANTING_TABLE_USED);
+        }
+    }
+
+    public static boolean tryFire(ServerPlayer player, Identifier id) {
+        DialogueEventDefinition definition = INSTANCE.definitions.get(id);
+        if (definition == null) return false;
+        if (definition.once() && isFired(player, id)) return false;
+        fire(player, id, definition);
+        return true;
+    }
+
+    public static boolean runEvent(ServerPlayer player, Identifier id) {
+        DialogueEventDefinition definition = INSTANCE.definitions.get(id);
+        if (definition == null) return false;
+        fire(player, id, definition);
+        return true;
+    }
+
+    public static Set<Identifier> registeredEvents() {
+        return INSTANCE.definitions.keySet();
     }
 
     private void tickServer(MinecraftServer server) {
@@ -81,6 +114,7 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
         if (definition.once()) {
             markFired(player, id);
         }
+        recordFiredDayTime(player, id);
         PacketDistributor.sendToPlayer(player, new DialogueEventStartPayload(definition.lines()));
     }
 
@@ -99,6 +133,18 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
 
     public static void resetPlayerProgress(ServerPlayer player) {
         player.getPersistentData().remove(PERSISTENCE_KEY);
+        player.getPersistentData().remove(TIMING_KEY);
+    }
+
+    public static long getFiredDayTime(ServerPlayer player, Identifier id) {
+        return player.getPersistentData().getCompoundOrEmpty(TIMING_KEY)
+            .getLong(id.toString()).orElse(-1L);
+    }
+
+    private static void recordFiredDayTime(ServerPlayer player, Identifier id) {
+        CompoundTag times = player.getPersistentData().getCompoundOrEmpty(TIMING_KEY);
+        times.putLong(id.toString(), player.level().getOverworldClockTime());
+        player.getPersistentData().put(TIMING_KEY, times);
     }
 
     private static ListTag firedList(ServerPlayer player) {

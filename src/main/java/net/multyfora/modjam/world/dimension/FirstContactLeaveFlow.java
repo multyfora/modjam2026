@@ -5,6 +5,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.multyfora.modjam.dialogue.DialogueEventManager;
 import net.multyfora.modjam.modjam;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
@@ -32,6 +33,7 @@ public class FirstContactLeaveFlow {
                 var player = entry.getKey();
                 if (player.level().dimension() == ModDimensions.FIRST_CONTACT_LEVEL_KEY) {
                     FirstContactUtils.leaveDimension(player);
+                    DialogueEventManager.tryFire(player, DialogueEventManager.OVERWORLD_WELCOME);
                     PacketDistributor.sendToPlayer(player, new FirstContactEnterPayload());
                 }
                 return true;

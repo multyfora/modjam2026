@@ -1,0 +1,12 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:at_structure",
+      "tag": "minecraft:village"
+    }
+  ],
+  "lines": [
+    "These people seem like an {i}intelligent species{/}, but {shake:2}don't be fooled{/}. I've tried, you {b}can't reason{/} with them."
+  ],
+  "once": true
+}

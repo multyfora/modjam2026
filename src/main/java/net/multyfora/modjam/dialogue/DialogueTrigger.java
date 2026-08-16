@@ -10,7 +10,12 @@ import java.util.Map;
 
 public interface DialogueTrigger {
     Map<Identifier, MapCodec<? extends DialogueTrigger>> TYPES = Map.of(
-        Identifier.fromNamespaceAndPath("modjam", "inventory"), InventoryDialogueTrigger.CODEC
+        Identifier.fromNamespaceAndPath("modjam", "inventory"), InventoryDialogueTrigger.CODEC,
+        Identifier.fromNamespaceAndPath("modjam", "never"), NeverDialogueTrigger.CODEC,
+        Identifier.fromNamespaceAndPath("modjam", "nearby_block"), NearbyBlockDialogueTrigger.CODEC,
+        Identifier.fromNamespaceAndPath("modjam", "time_after"), TimeAfterDialogueTrigger.CODEC,
+        Identifier.fromNamespaceAndPath("modjam", "elapsed"), ElapsedTimeDialogueTrigger.CODEC,
+        Identifier.fromNamespaceAndPath("modjam", "at_structure"), AtStructureDialogueTrigger.CODEC
     );
 
     Codec<DialogueTrigger> CODEC = Codec.STRING.fieldOf("type")

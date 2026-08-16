@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import com.lowdragmc.lowdraglib2.gui.factory.PlayerUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -15,14 +17,26 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.flag.FeatureFlags;
+import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
+import net.multyfora.modjam.block.SingularityCrystalBlock;
+import net.multyfora.modjam.block.SingularityCrystalDrain;
 import net.multyfora.modjam.item.BrightestItem;
 import net.multyfora.modjam.item.JournalItem;
+import net.multyfora.modjam.item.LightWeaverItem;
+import net.multyfora.modjam.light.LightEnergyManager;
+import net.multyfora.modjam.lightweaver.CheatSheetUI;
+import net.multyfora.modjam.lightweaver.LightWeaverMenuType;
 import net.multyfora.modjam.world.entity.BrightestEntity;
+import net.multyfora.modjam.world.entity.LightWeaverEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
@@ -46,11 +60,16 @@ import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
 import net.multyfora.modjam.network.FirstContactTogglePayload;
+import net.multyfora.modjam.network.LightWeaverInfusePayload;
 import net.multyfora.modjam.network.OpenBrightestMenuPayload;
+import net.multyfora.modjam.network.OpenCheatSheetPayload;
 import net.multyfora.modjam.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.modjam.world.dimension.FirstContactUtils;
 import net.multyfora.modjam.world.dimension.ModDimensions;
+import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+
+import java.util.Set;
 
 @Mod(modjam.MODID)
 public class modjam {
@@ -61,6 +80,8 @@ public class modjam {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
+    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, MODID);
 
     public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", p -> p.mapColor(MapColor.STONE));
     public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
@@ -71,6 +92,33 @@ public class modjam {
     public static final DeferredItem<Item> BRIGHTEST = ITEMS.registerItem("brightest", BrightestItem::new);
 
     public static final DeferredItem<Item> JOURNAL_ITEM = ITEMS.registerItem("discovery_journal", JournalItem::new);
+
+    public static final DeferredHolder<EntityType<?>, EntityType<LightWeaverEntity>> LIGHT_WEAVER_ENTITY =
+        ENTITY_TYPES.register("light_weaver", () -> EntityType.Builder.of(LightWeaverEntity::new, MobCategory.MISC)
+            .sized(0.5f, 0.5f)
+            .setUpdateInterval(20)
+            .build(ResourceKey.create(Registries.ENTITY_TYPE,
+                Identifier.fromNamespaceAndPath(MODID, "light_weaver"))));
+    public static final DeferredItem<Item> LIGHT_WEAVER_ITEM = ITEMS.registerItem("light_weaver", LightWeaverItem::new);
+    public static final DeferredHolder<MenuType<?>, MenuType<ModularUIContainerMenu>> LIGHT_WEAVER_MENU =
+        MENU_TYPES.register("light_weaver", () -> new MenuType<ModularUIContainerMenu>(
+            (IContainerFactory<ModularUIContainerMenu>) LightWeaverMenuType::create,
+            FeatureFlags.DEFAULT_FLAGS));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AmethystCrystalBlockEntity>> AMETHYST_CRYSTAL_BLOCK_ENTITY =
+        BLOCK_ENTITY_TYPES.register(
+            "amethyst_crystal",
+            () -> new BlockEntityType<>(AmethystCrystalBlockEntity::new, Set.of(Blocks.AMETHYST_CLUSTER))
+        );
+
+    public static final DeferredBlock<SingularityCrystalBlock> SINGULARITY_CRYSTAL_BLOCK = BLOCKS.registerBlock(
+        "singularity_crystal",
+        SingularityCrystalBlock::new,
+        p -> p.mapColor(MapColor.COLOR_BLACK).strength(3.5f).sound(SoundType.AMETHYST).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> SINGULARITY_CRYSTAL_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("singularity_crystal", SINGULARITY_CRYSTAL_BLOCK);
+
+    public static final Identifier CHEAT_SHEET_ID = Identifier.fromNamespaceAndPath(MODID, "cheat_sheet");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> FIRST_CONTACT_MUSIC = SOUND_EVENTS.register(
         "first_contact_music",
@@ -96,6 +144,8 @@ public class modjam {
                 output.accept(EXAMPLE_BLENDER_BLOCK_ITEM.get());
                 output.accept(BRIGHTEST.get());
                 output.accept(JOURNAL_ITEM.get());
+                output.accept(LIGHT_WEAVER_ITEM.get());
+                output.accept(SINGULARITY_CRYSTAL_BLOCK_ITEM.get());
             }).build());
 
     public modjam(IEventBus modEventBus, ModContainer modContainer) {
@@ -107,11 +157,16 @@ public class modjam {
         ENTITY_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         SOUND_EVENTS.register(modEventBus);
+        BLOCK_ENTITY_TYPES.register(modEventBus);
+        MENU_TYPES.register(modEventBus);
         ModDimensions.BIOMES.register(modEventBus);
+
+        PlayerUIMenuType.register(CHEAT_SHEET_ID, player -> p -> CheatSheetUI.create(p));
 
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(DialogueEventManager.getInstance());
         NeoForge.EVENT_BUS.addListener(DialogueEventManager::onAddReloadListeners);
+        NeoForge.EVENT_BUS.register(SingularityCrystalDrain.getInstance());
 
         modEventBus.addListener(this::addCreative);
 
@@ -150,10 +205,33 @@ public class modjam {
                 }
             }
         );
+
+        registrar.playToServer(
+            LightWeaverInfusePayload.TYPE,
+            LightWeaverInfusePayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.player() instanceof ServerPlayer player
+                        && player.level().getEntity(payload.entityId()) instanceof LightWeaverEntity weaver) {
+                    weaver.tryInfuse(player, payload.packed());
+                }
+            }
+        );
+
+        registrar.playToServer(
+            OpenCheatSheetPayload.TYPE,
+            OpenCheatSheetPayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.player() instanceof ServerPlayer player) {
+                    PlayerUIMenuType.openUI(player, CHEAT_SHEET_ID);
+                }
+            }
+        );
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("HELLO FROM COMMON SETUP");
+
+        LightEnergyManager.registerSource(Blocks.AMETHYST_CLUSTER, 1.0, 3.5);
 
         if (Config.LOG_DIRT_BLOCK.getAsBoolean()) {
             LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));

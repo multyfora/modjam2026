@@ -19,6 +19,8 @@ public class BrightestVisitationManager {
     private static final BrightestVisitationManager INSTANCE = new BrightestVisitationManager();
     private static final float MOVE_DURATION = 22f;
     private static final float APPEAR_DURATION = 10f;
+    private static final float LEAVE_DURATION = 24f;
+    private static final Vec3 LEAVE_TARGET = new Vec3(0.0, -2.6, -6.5);
 
     private static final List<Vec3> ANCHORS = List.of(
         new Vec3(1.6, -0.1, -2.0),
@@ -41,6 +43,10 @@ public class BrightestVisitationManager {
     private Vec3 target;
     private float moveProgress = 1f;
     private float appearTicks;
+    private boolean leaving;
+    private float leaveTicks;
+    private Vec3 leaveFrom = Vec3.ZERO;
+    private float leaveFromScale = 1f;
 
     public static BrightestVisitationManager getInstance() {
         return INSTANCE;
@@ -57,10 +63,17 @@ public class BrightestVisitationManager {
         appearTicks = 0f;
         active = true;
         elapsedTicks = 0;
+        leaving = false;
+        leaveTicks = 0f;
     }
 
     public void end() {
-        active = false;
+        if (active && !leaving) {
+            leaving = true;
+            leaveTicks = 0f;
+            leaveFrom = shownPos(0f);
+            leaveFromScale = scaleForDepth(leaveFrom);
+        }
     }
 
     public boolean isActive() {
@@ -83,6 +96,14 @@ public class BrightestVisitationManager {
 
     public void tick() {
         if (!active) return;
+        if (leaving) {
+            leaveTicks++;
+            if (leaveTicks >= LEAVE_DURATION) {
+                active = false;
+                leaving = false;
+            }
+            return;
+        }
         elapsedTicks++;
         appearTicks++;
         if (moveProgress < MOVE_DURATION) {
@@ -98,12 +119,27 @@ public class BrightestVisitationManager {
         float partial = deltaTracker.getGameTimeDeltaPartialTick(false);
         float t = (elapsedTicks + partial) / 20.0f;
 
+        PoseStack poseStack = new PoseStack();
+
+        if (leaving) {
+            float p = Mth.clamp((leaveTicks + partial) / LEAVE_DURATION, 0f, 1f);
+            float eased = p * p;
+            Vec3 pos = leaveFrom.lerp(LEAVE_TARGET, eased);
+            float scale = leaveFromScale * (1f - eased);
+            poseStack.translate((float) pos.x, (float) pos.y, (float) pos.z);
+            poseStack.mulPose(Axis.YP.rotationDegrees(p * 420f));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(p * 50f));
+            poseStack.mulPose(Axis.XP.rotationDegrees(p * -30f));
+            poseStack.scale(scale, scale, scale);
+            renderBrightest(gameRenderer, submitNodeCollector, poseStack);
+            return;
+        }
+
         Vec3 pos = shownPos(partial);
         float glide = 1f - Mth.clamp((moveProgress + partial) / MOVE_DURATION, 0f, 1f);
         float glideSway = (float) Math.sin(Mth.clamp((moveProgress + partial) / MOVE_DURATION, 0f, 1f) * Math.PI);
 
-        float depth = Math.max(1.5f, (float) -pos.z);
-        float depthScale = Mth.clamp(2.2f / depth, 0.5f, 2.2f);
+        float depthScale = scaleForDepth(pos);
         float appear = Mth.clamp((appearTicks + partial) / APPEAR_DURATION, 0f, 1f);
         float appearEase = 1f;
         if (appear < 1f) {
@@ -116,13 +152,16 @@ public class BrightestVisitationManager {
         float roll = (float) Math.sin(t * 0.9f) * 6.0f + glideSway * 7.0f;
         float pitch = (float) Math.sin(t * 1.1f) * 3.0f + (float) (target.y - current.y) * 6.0f * glide;
 
-        PoseStack poseStack = new PoseStack();
         poseStack.translate((float) pos.x, (float) pos.y, (float) pos.z);
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
         poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
         poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
         poseStack.scale(scale, scale, scale);
+        renderBrightest(gameRenderer, submitNodeCollector, poseStack);
+    }
 
+    private void renderBrightest(GameRenderer gameRenderer, SubmitNodeCollector submitNodeCollector, PoseStack poseStack) {
+        Minecraft mc = Minecraft.getInstance();
         gameRenderer.itemInHandRenderer.renderItem(
             mc.player,
             modjam.BRIGHTEST.get().getDefaultInstance(),
@@ -131,6 +170,11 @@ public class BrightestVisitationManager {
             submitNodeCollector,
             15728880
         );
+    }
+
+    private static float scaleForDepth(Vec3 pos) {
+        float depth = Math.max(1.5f, (float) -pos.z);
+        return Mth.clamp(2.2f / depth, 0.5f, 2.2f);
     }
 
     private Vec3 shownPos(float partial) {

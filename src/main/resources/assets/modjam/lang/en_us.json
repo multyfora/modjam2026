@@ -4,6 +4,8 @@
   "item.modjam.example_item": "Example Item",
   "item.modjam.brightest": "Brightest",
   "item.modjam.discovery_journal": "Discovery Journal",
+  "item.modjam.light_weaver": "Light Weaver",
+  "block.modjam.singularity_crystal": "Singularity Crystal",
 
   "modjam.configuration.title": "modjam Configs",
   "modjam.configuration.section.modjam.common.toml": "modjam Configs",
@@ -17,6 +19,11 @@
   "command.modjam.leave.not_in_dimension": "You are not in the First Contact dimension.",
   "command.modjam.resetdialogues.success": "Dialogue event progress reset.",
   "command.modjam.resetdialogues.failure": "Could not reset dialogue event progress.",
+  "command.modjam.playdialogue.all": "Running %s dialogue event(s).",
+  "command.modjam.playdialogue.single": "Running dialogue event %s.",
+  "command.modjam.playdialogue.unknown": "No dialogue event named %s.",
+  "command.modjam.playdialogue.invalid": "%s is not a valid event name.",
+  "command.modjam.playdialogue.none": "No dialogue events are loaded.",
   "subtitles.modjam.first_contact_music": "First Contact theme",
 
   "menu.modjam.brightest.title": "The Brightest",

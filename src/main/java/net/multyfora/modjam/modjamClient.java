@@ -20,6 +20,7 @@ import net.multyfora.modjam.client.DialogueSystem;
 import net.multyfora.modjam.client.FirstContactOverlay;
 import net.multyfora.modjam.client.FirstContactTransitionState;
 import net.multyfora.modjam.client.renderer.BrightestEntityRenderer;
+import net.multyfora.modjam.client.renderer.LightWeaverRenderer;
 import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
@@ -37,6 +38,7 @@ public class modjamClient {
 
     private static void onRegisterEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(modjam.BRIGHTEST_ENTITY.get(), BrightestEntityRenderer::new);
+        event.registerEntityRenderer(modjam.LIGHT_WEAVER_ENTITY.get(), LightWeaverRenderer::new);
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {

@@ -10,6 +10,11 @@
     "PostChainAccessor",
     "PostPassAccessor"
   ],
+  "mixins": [
+    "AmethystClusterMixin",
+    "LightEngineMixin",
+    "LevelSetBlockMixin"
+  ],
   "injectors": {
     "defaultRequire": 0
   }
