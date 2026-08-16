@@ -20,6 +20,6 @@ public class LightWeaverModel extends GeoModel<LightWeaverEntity> {
 
     @Override
     public Identifier getAnimationResource(LightWeaverEntity animatable) {
-        return null;
+        return Identifier.fromNamespaceAndPath(modjam.MODID, "entity/light_weaver");
     }
 }
