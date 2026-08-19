@@ -1,0 +1,18 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "#modjam:torches" }
+      ]
+    },
+    {
+      "type": "modjam:not_fired",
+      "event": "modjam:amethyst_discovered"
+    }
+  ],
+  "lines": [
+    "you are still yet to find an actual light..."
+  ],
+  "once": true
+}

@@ -1,0 +1,17 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "modjam:singularity_crystal",
+      "radius": 16
+    },
+    {
+      "type": "modjam:not_fired",
+      "event": "modjam:amethyst_discovered"
+    }
+  ],
+  "lines": [
+    "finally something worthy, give it light and see what happens!"
+  ],
+  "once": true
+}

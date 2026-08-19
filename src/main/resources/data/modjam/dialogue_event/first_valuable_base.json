@@ -1,0 +1,18 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "minecraft:diamond_block",
+      "radius": 16
+    },
+    {
+      "type": "modjam:nearby_block",
+      "block": "minecraft:netherite_block",
+      "radius": 16
+    }
+  ],
+  "lines": [
+    "I hope you made it for storage, and {b}{pop}not{/} for decoration."
+  ],
+  "once": true
+}

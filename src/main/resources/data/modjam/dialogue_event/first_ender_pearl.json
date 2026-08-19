@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "minecraft:ender_pearl" }
+      ]
+    }
+  ],
+  "lines": [
+    "you {i}stepped through space{/}.",
+    "tell me the truth - for one heartbeat, did you feel {#AA00AA}perfect{/}?",
+    "that was a sliver of how I move. {pop:0.4}you are welcome{/}."
+  ],
+  "once": true
+}

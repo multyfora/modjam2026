@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "#modjam:wooden_tools" }
+      ]
+    }
+  ],
+  "lines": [
+    "a {b}tool{/}. made of the {i}tree{/}.",
+    "you will hit a rock twice and it will {shake:1.5}snap{/}.",
+    "still. {#C8C8C8}admirable{/} that you tried. I suppose."
+  ],
+  "once": true
+}

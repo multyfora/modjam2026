@@ -1,0 +1,22 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "minecraft:beacon",
+      "radius": 16
+    },
+    {
+      "type": "modjam:time_after",
+      "event": "modjam:amethyst_discovered",
+      "ticks": 0
+    }
+  ],
+  "lines": [
+    "All that power and this is what you use it for?",
+    "This petty joke of a machine was probably made by those villagers, who can't even distinguish their own noses from a rock.",
+    "I'm disappointed. A single nether star can power a whole city and you use it for... a tiny buff?",
+    "and this beam... instead of focusing the light, this beacon blocks it. only letting a fraction through.",
+    "Truly a slap on the face of Armai - who invented it"
+  ],
+  "once": true
+}

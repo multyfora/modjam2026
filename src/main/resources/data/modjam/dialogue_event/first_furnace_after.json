@@ -1,0 +1,21 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "minecraft:furnace" }
+      ]
+    },
+    {
+      "type": "modjam:time_after",
+      "event": "modjam:amethyst_discovered",
+      "ticks": 0
+    }
+  ],
+  "lines": [
+    "you built a {#FFD700}stomach of stone{/}. feed it, and it {i}burps{/} heat.",
+    "there is not one {pop:0.4}mystical component{/} in it. {shake:1}not one{/} - and yet the bread it bakes keeps you breathing.",
+    "you are learning what fire is: a {b}tool{/}. you are still learning what light is."
+  ],
+  "once": true
+}

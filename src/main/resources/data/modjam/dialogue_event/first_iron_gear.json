@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "#modjam:iron_tools" }
+      ]
+    }
+  ],
+  "lines": [
+    "hmm. {pop:0.3}metal{/}. actual, shaped metal.",
+    "that blade is... {#C8C8C8}usable{/}. I admit it.",
+    "you are still leagues behind me. {i}but{/} the gap shrinks."
+  ],
+  "once": true
+}

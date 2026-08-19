@@ -1,0 +1,17 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "#modjam:leather_armor" },
+        { "items": "#modjam:iron_armor" }
+      ]
+    }
+  ],
+  "lines": [
+    "dressing up? {#FFD700}how ceremonious{/} of you.",
+    "I do not wear armor. I {b}am{/} the armor.",
+    "...you look {#C8C8C8}cooler{/}. a little. do not let it get to your head."
+  ],
+  "once": true
+}

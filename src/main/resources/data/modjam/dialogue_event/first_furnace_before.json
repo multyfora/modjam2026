@@ -1,0 +1,20 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "minecraft:furnace" }
+      ]
+    },
+    {
+      "type": "modjam:not_fired",
+      "event": "modjam:amethyst_discovered"
+    }
+  ],
+  "lines": [
+    "you built a {#FFD700}stomach of stone{/}. feed it, and it {i}burps{/} heat.",
+    "{shake:1}primitive{/}.",
+    "{wave:1}useful{/}, though. I will grant it: you cook better than you build."
+  ],
+  "once": true
+}

@@ -3,6 +3,7 @@ package net.multyfora.modjam.lightweaver;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.multyfora.modjam.modjam;
 
 import java.util.Arrays;
 import java.util.List;
@@ -231,6 +232,16 @@ public final class LightWeaverShapes {
                     ".......XX",
                     "........X",
                     ".........",
+                    "........."),
+            shape("light_beam", modjam.LIGHT_BEAM_ENCHANTMENT.getKey(), 6,
+                    ".........",
+                    ".....X...",
+                    "....XX...",
+                    "...XXX...",
+                    "..XXX....",
+                    "..XX.....",
+                    ".XX......",
+                    "X........",
                     "........."),
             shape("looting", Enchantments.LOOTING, 1,
                     "..XXXXX..",
@@ -507,6 +518,10 @@ public final class LightWeaverShapes {
             if (cell) return false;
         }
         return true;
+    }
+
+    public static boolean isValidPacked(String packed) {
+        return packed != null && packed.length() == WORDS * 16;
     }
 
     public static String pack(boolean[] cells) {

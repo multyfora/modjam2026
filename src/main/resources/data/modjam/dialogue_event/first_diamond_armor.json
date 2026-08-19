@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "#modjam:diamond_armor" }
+      ]
+    }
+  ],
+  "lines": [
+    "shiny. very shiny.",
+    "{#FFD700}so am I{/}. we finally have something in common.",
+    "I almost like you now. {b}almost{/}."
+  ],
+  "once": true
+}

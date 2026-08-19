@@ -44,7 +44,8 @@ void main() {
     float shimmer = 1.0 + SHIMMER_AMOUNT * sin(radial * 9.0 - time * 6.0);
 
     // Compose: alpha carries intensity so additive SRC_ALPHA/ONE blending glows.
-    float energy = (base + bandBoost) * shimmer;
+    // vertexColor.a drives the global fade (0 = invisible, 1 = full beam).
+    float energy = (base + bandBoost) * shimmer * vertexColor.a;
     vec3 color = vertexColor.rgb * energy;
     fragColor = vec4(color, energy);
 }

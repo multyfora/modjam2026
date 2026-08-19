@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "#minecraft:saplings" }
+      ]
+    }
+  ],
+  "lines": [
+    "you broke a tree and kept the {#00FF00}seed{/}... how {wave:0.8}generous{/} of you.",
+    "it will die, you know. {i}they always do{/}.",
+    "your kind plants things and calls it {pop:0.5}growth{/}. I call it {#C8C8C8}delay{/}."
+  ],
+  "once": true
+}

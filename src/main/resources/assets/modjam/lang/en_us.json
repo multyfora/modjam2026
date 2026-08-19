@@ -7,6 +7,8 @@
   "item.modjam.light_weaver": "Light Weaver",
   "block.modjam.singularity_crystal": "Singularity Crystal",
 
+  "enchantment.modjam.light_beam": "Light Beam",
+
   "modjam.configuration.title": "modjam Configs",
   "modjam.configuration.section.modjam.common.toml": "modjam Configs",
   "modjam.configuration.section.modjam.common.toml.title": "modjam Configs",

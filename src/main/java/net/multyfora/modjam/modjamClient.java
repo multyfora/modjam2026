@@ -3,6 +3,7 @@ package net.multyfora.modjam;
 import com.lowdragmc.lowdraglib2.gui.hud.ModularHudLayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -19,11 +20,14 @@ import net.multyfora.modjam.client.DialogueEventClientHandler;
 import net.multyfora.modjam.client.DialogueSystem;
 import net.multyfora.modjam.client.FirstContactOverlay;
 import net.multyfora.modjam.client.FirstContactTransitionState;
+import net.multyfora.modjam.client.ShotBeamImpactOverlay;
+import net.multyfora.modjam.client.ShotBeamRenderer;
 import net.multyfora.modjam.client.renderer.BrightestEntityRenderer;
 import net.multyfora.modjam.client.renderer.LightWeaverRenderer;
 import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
+import net.multyfora.modjam.network.LightBeamPayload;
 import net.multyfora.modjam.network.OpenBrightestMenuPayload;
 
 @Mod(value = modjam.MODID, dist = Dist.CLIENT)
@@ -47,6 +51,7 @@ public class modjamClient {
             (ModularHudLayer) () -> DialogueSystem.getInstance().getModularUI()
         );
         FirstContactOverlay.register(event);
+        ShotBeamImpactOverlay.register(event);
     }
 
     private static void onRegisterClientPayloadHandlers(RegisterClientPayloadHandlersEvent event) {
@@ -62,6 +67,14 @@ public class modjamClient {
             (payload, context) -> BrightestInteractionManager.getInstance().openMenu());
         event.register(DialogueEventStartPayload.TYPE,
             (payload, context) -> DialogueEventClientHandler.getInstance().handle(payload));
+        event.register(LightBeamPayload.TYPE,
+            (payload, context) -> {
+                Vec3 start = new Vec3(payload.startX(), payload.startY(), payload.startZ());
+                Vec3 dir = new Vec3(payload.dirX(), payload.dirY(), payload.dirZ()).normalize();
+                Vec3 muzzle = start.add(0, -ShotBeamRenderer.MUZZLE_DROP, 0);
+                ShotBeamRenderer.spawnShot(muzzle, start.add(dir.scale(payload.range())),
+                    ShotBeamRenderer.BEAM_WIDTH, ShotBeamRenderer.BEAM_COLOR);
+            });
     }
 
     @SubscribeEvent

@@ -1,0 +1,14 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:elapsed",
+      "ticks": 480000
+    }
+  ],
+  "lines": [
+    "twenty days. you have made this world {i}yours{/}.",
+    "and I - {b}I{/}, I look forward to your {pop:0.4}tomorrow{/}.",
+    "call it whatever you want. {#FFD700}a friend{/} is fine."
+  ],
+  "once": true
+}

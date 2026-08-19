@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "#minecraft:boats" }
+      ]
+    }
+  ],
+  "lines": [
+    "a floating log. {wave:1}soo thrilling{/}.",
+    "my kind crossed {i}galaxies{/} in vessels of pure thought.",
+    "you... paddle. {pop:0.5}enjoy your puddle{/}."
+  ],
+  "once": true
+}

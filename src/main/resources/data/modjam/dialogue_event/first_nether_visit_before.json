@@ -1,0 +1,19 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "minecraft:netherrack",
+      "radius": 12
+    },
+    {
+      "type": "modjam:not_fired",
+      "event": "modjam:amethyst_discovered"
+    }
+  ],
+  "lines": [
+    "you crossed into the {#FF4500}warm place{/}.",
+    "even its {b}fire{/} is {wave:1}primitive{/}. burning. blind. hungry for light it cannot make.",
+    "{b}brave{/}. or {shake:1}idiotic{/}. with you, they look identical."
+  ],
+  "once": true
+}

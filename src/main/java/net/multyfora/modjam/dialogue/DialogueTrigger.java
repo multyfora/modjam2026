@@ -15,7 +15,8 @@ public interface DialogueTrigger {
         Identifier.fromNamespaceAndPath("modjam", "nearby_block"), NearbyBlockDialogueTrigger.CODEC,
         Identifier.fromNamespaceAndPath("modjam", "time_after"), TimeAfterDialogueTrigger.CODEC,
         Identifier.fromNamespaceAndPath("modjam", "elapsed"), ElapsedTimeDialogueTrigger.CODEC,
-        Identifier.fromNamespaceAndPath("modjam", "at_structure"), AtStructureDialogueTrigger.CODEC
+        Identifier.fromNamespaceAndPath("modjam", "at_structure"), AtStructureDialogueTrigger.CODEC,
+        Identifier.fromNamespaceAndPath("modjam", "not_fired"), NotFiredDialogueTrigger.CODEC
     );
 
     Codec<DialogueTrigger> CODEC = Codec.STRING.fieldOf("type")

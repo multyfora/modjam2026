@@ -1,0 +1,20 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "minecraft:netherrack",
+      "radius": 12
+    },
+    {
+      "type": "modjam:time_after",
+      "event": "modjam:amethyst_discovered",
+      "ticks": 0
+    }
+  ],
+  "lines": [
+    "the warm place. I told you - {#C8C8C8}hollow fire{/}, not one mystical component in any of it.",
+    "that realm's flame is older than your amethyst, and it has learned {b}nothing{/}.",
+    "you carry more meaning in one shard than that whole world holds. {pop:0.4}remember that{/}."
+  ],
+  "once": true
+}

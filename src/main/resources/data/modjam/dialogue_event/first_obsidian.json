@@ -1,0 +1,15 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "minecraft:obsidian" }
+      ]
+    }
+  ],
+  "lines": [
+    "The rock that is child to hot and cold",
+    "nothing more to it."
+  ],
+  "once": true
+}

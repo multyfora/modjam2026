@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "minecraft:leather" }
+      ]
+    }
+  ],
+  "lines": [
+    "{#C8C8C8}you killed a poor creature{/}... and you are {i}proud{/} of it.",
+    "so {shake:1.5}brutal{/}. so... {wave:1}primitive{/}.",
+    "I have created stars. {b}you{/} skinned a cow."
+  ],
+  "once": true
+}

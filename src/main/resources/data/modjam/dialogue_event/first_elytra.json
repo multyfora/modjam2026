@@ -1,0 +1,14 @@
+{
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        { "items": "minecraft:elytra" }
+      ]
+    }
+  ],
+  "lines": [
+    "Well you too can finally fly. I am so {b}proud{/}"
+  ],
+  "once": true
+}
