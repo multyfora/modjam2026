@@ -12,7 +12,7 @@
     }
   ],
   "lines": [
-    "you killed a {#FFA500}flying fire{/}?",
+    "You killed a {#FFA500}flying fire{/}?",
     "its flame is {shake:1}primitive{/} - a cousin of mine who never {i}grew up{/}.",
     "{wave:1}rude{/}. ...also kind of impressive."
   ],

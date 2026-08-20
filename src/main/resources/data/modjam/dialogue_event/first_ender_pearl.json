@@ -8,9 +8,9 @@
     }
   ],
   "lines": [
-    "you {i}stepped through space{/}.",
-    "tell me the truth - for one heartbeat, did you feel {#AA00AA}perfect{/}?",
-    "that was a sliver of how I move. {pop:0.4}you are welcome{/}."
+    "You {i}blinked{/} through space.",
+    "Tell me the truth - for one heartbeat, did you feel {#AA00AA}perfect{/}?",
+    "That was a sliver of how I move. {pop:0.4}you are welcome{/}."
   ],
   "once": true
 }

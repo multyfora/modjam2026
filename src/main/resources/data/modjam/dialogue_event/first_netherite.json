@@ -8,9 +8,9 @@
     }
   ],
   "lines": [
-    "you dragged the {#00FFFF}bottom of the world{/} up through fire.",
-    "the floor of the world's {i}floor{/}.",
-    "{wave:1}impressive{/}. I will say it once, so {b}cherish{/} it. It is, after all, pretty tough"
+    "You dragged the {#00FFFF}bottom of the world{/} up through fire.",
+    "The floor of the world's {i}floor{/}.",
+    "{wave:1}Impressive{/}. I will say it once, so {b}cherish{/} it. It is, after all, pretty tough"
   ],
   "once": true
 }

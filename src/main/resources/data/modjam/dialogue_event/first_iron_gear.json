@@ -8,9 +8,9 @@
     }
   ],
   "lines": [
-    "hmm. {pop:0.3}metal{/}. actual, shaped metal.",
-    "that blade is... {#C8C8C8}usable{/}. I admit it.",
-    "you are still leagues behind me. {i}but{/} the gap shrinks."
+    "Hmm. {pop:0.3}metal{/}. actual, shaped metal.",
+    "That blade is... {#C8C8C8}usable{/}. I admit it.",
+    "You are still leagues behind me. {i}But{/} the gap shrinks."
   ],
   "once": true
 }

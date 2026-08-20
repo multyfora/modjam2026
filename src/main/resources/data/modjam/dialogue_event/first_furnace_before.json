@@ -12,9 +12,9 @@
     }
   ],
   "lines": [
-    "you built a {#FFD700}stomach of stone{/}. feed it, and it {i}burps{/} heat.",
-    "{shake:1}primitive{/}.",
-    "{wave:1}useful{/}, though. I will grant it: you cook better than you build."
+    "You built a {#FFD700}stomach of stone{/}. feed it, and it {i}burps{/} heat.",
+    "{shake:1}Primitive{/}.",
+    "{wave:1}Useful{/}, though. I will grant it: you cook better than you build."
   ],
   "once": true
 }

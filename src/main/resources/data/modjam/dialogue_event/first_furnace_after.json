@@ -13,9 +13,9 @@
     }
   ],
   "lines": [
-    "you built a {#FFD700}stomach of stone{/}. feed it, and it {i}burps{/} heat.",
-    "there is not one {pop:0.4}mystical component{/} in it. {shake:1}not one{/} - and yet the bread it bakes keeps you breathing.",
-    "you are learning what fire is: a {b}tool{/}. you are still learning what light is."
+    "You built a {#FFD700}stomach of stone{/}. feed it, and it {i}burps{/} heat.",
+    "There is not one {pop:0.4}mystical component{/} in it. {shake:1}not one{/} - and yet the bread it bakes keeps you breathing.",
+    "You are learning what fire is: a {b}tool{/}. You are still learning what light is."
   ],
   "once": true
 }
