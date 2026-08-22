@@ -51,6 +51,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -106,7 +107,7 @@ public class modjam {
     public static final DeferredHolder<EntityType<?>, EntityType<LightWeaverEntity>> LIGHT_WEAVER_ENTITY =
         ENTITY_TYPES.register("light_weaver", () -> EntityType.Builder.of(LightWeaverEntity::new, MobCategory.MISC)
             .sized(0.625f, 0.625f)
-            .setUpdateInterval(20)
+            .setUpdateInterval(2)
             .build(ResourceKey.create(Registries.ENTITY_TYPE,
                 Identifier.fromNamespaceAndPath(MODID, "light_weaver"))));
     public static final DeferredItem<Item> LIGHT_WEAVER_ITEM = ITEMS.registerItem("light_weaver", LightWeaverItem::new);
@@ -157,6 +158,7 @@ public class modjam {
     public modjam(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::onRegisterPayloadHandlers);
+        modEventBus.addListener(this::onRegisterAttributes);
 
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
@@ -241,6 +243,10 @@ public class modjam {
                 }
             }
         );
+    }
+
+    private void onRegisterAttributes(EntityAttributeCreationEvent event) {
+        event.put(LIGHT_WEAVER_ENTITY.get(), LightWeaverEntity.createAttributes().build());
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

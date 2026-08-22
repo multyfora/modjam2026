@@ -27,6 +27,9 @@ public class LightWeaverItem extends Item {
             var weaver = modjam.LIGHT_WEAVER_ENTITY.get().create(serverLevel, EntitySpawnReason.SPAWN_ITEM_USE);
             if (weaver != null) {
                 weaver.setPos(spawnBlock.getX() + 0.5, spawnBlock.getY() + 0.5, spawnBlock.getZ() + 0.5);
+                if (!serverLevel.noCollision(weaver, weaver.getBoundingBox())) {
+                    return InteractionResult.FAIL;
+                }
                 serverLevel.addFreshEntity(weaver);
                 Player player = context.getPlayer();
                 if (player == null || !player.getAbilities().instabuild) {

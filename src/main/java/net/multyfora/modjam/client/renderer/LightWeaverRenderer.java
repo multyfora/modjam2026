@@ -21,8 +21,6 @@ public class LightWeaverRenderer extends GeoEntityRenderer<LightWeaverEntity, Li
     private static final float ORBIT_SCALE = 0.55F;
     private static final int MAX_ORBIT_ITEMS = 5;
 
-    private long lastDebugLog;
-
     private final ItemModelResolver itemModelResolver;
 
     public LightWeaverRenderer(EntityRendererProvider.Context context) {
@@ -52,29 +50,28 @@ public class LightWeaverRenderer extends GeoEntityRenderer<LightWeaverEntity, Li
             itemModelResolver.updateForNonLiving(state.orbitPaper, paper, ItemDisplayContext.GROUND, entity);
             state.paperCount = 1;
         }
-        long now = System.nanoTime();
-        if (now - lastDebugLog > 1_000_000_000L) {
-            lastDebugLog = now;
-            net.multyfora.modjam.modjam.LOGGER.info("DBG client orbit held={} count={} empty={} paper={} paperEmpty={}",
-                    held, held.getCount(), state.orbitItem.isEmpty(), paper, state.orbitPaper.isEmpty());
-        }
     }
+
+    private static final float MODEL_Y_OFFSET = 0.6F;
 
     @Override
     public void submit(LightWeaverRenderState state, PoseStack poseStack, SubmitNodeCollector renderTasks, CameraRenderState camera) {
+        poseStack.pushPose();
+        poseStack.translate(0, MODEL_Y_OFFSET, 0);
         super.submit(state, poseStack, renderTasks, camera);
 
         int total = state.orbitCount + state.paperCount;
-        if (total <= 0) return;
-
-        float time = state.ageInTicks * ORBIT_SPEED;
-        int index = 0;
-        if (state.paperCount > 0) {
-            submitOrbit(state.orbitPaper, index++, total, time, state, poseStack, renderTasks);
+        if (total > 0) {
+            float time = state.ageInTicks * ORBIT_SPEED;
+            int index = 0;
+            if (state.paperCount > 0) {
+                submitOrbit(state.orbitPaper, index++, total, time, state, poseStack, renderTasks);
+            }
+            for (int i = 0; i < state.orbitCount; i++) {
+                submitOrbit(state.orbitItem, index++, total, time, state, poseStack, renderTasks);
+            }
         }
-        for (int i = 0; i < state.orbitCount; i++) {
-            submitOrbit(state.orbitItem, index++, total, time, state, poseStack, renderTasks);
-        }
+        poseStack.popPose();
     }
 
     private void submitOrbit(ItemStackRenderState item, int index, int total, float time, LightWeaverRenderState state,
