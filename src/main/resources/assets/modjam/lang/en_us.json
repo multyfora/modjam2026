@@ -6,6 +6,8 @@
   "item.modjam.discovery_journal": "Discovery Journal",
   "item.modjam.light_weaver": "Light Weaver",
   "block.modjam.singularity_crystal": "Singularity Crystal",
+  "block.modjam.light_urn": "Light Urn",
+  "block.modjam.cracked_quartz": "Cracked Quartz Block",
 
   "enchantment.modjam.light_beam": "Light Beam",
 
@@ -26,6 +28,11 @@
   "command.modjam.playdialogue.unknown": "No dialogue event named %s.",
   "command.modjam.playdialogue.invalid": "%s is not a valid event name.",
   "command.modjam.playdialogue.none": "No dialogue events are loaded.",
+  "command.modjam.playcutscene.all": "Running %s cutscene(s).",
+  "command.modjam.playcutscene.single": "Running cutscene %s.",
+  "command.modjam.playcutscene.unknown": "No cutscene named %s.",
+  "command.modjam.playcutscene.invalid": "%s is not a valid cutscene name.",
+  "command.modjam.playcutscene.none": "No cutscenes are loaded.",
   "subtitles.modjam.first_contact_music": "First Contact theme",
 
   "menu.modjam.brightest.title": "The Brightest",

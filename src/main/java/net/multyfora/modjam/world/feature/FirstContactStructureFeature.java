@@ -1,6 +1,7 @@
 package net.multyfora.modjam.world.feature;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -74,8 +75,26 @@ public class FirstContactStructureFeature {
                 .setMirror(Mirror.NONE)
                 .setRotation(Rotation.NONE);
             template.placeInWorld(level, offset, offset, settings, level.getRandom(), 3);
+            replaceWallsWithUrns(level, offset, size);
         } catch (Exception e) {
             modjam.LOGGER.warn("Could not place structure {}", GRAVEYARD_ID, e);
         }
+    }
+
+    private static void replaceWallsWithUrns(ServerLevel level, BlockPos origin, Vec3i size) {
+        var urnState = modjam.LIGHT_URN_BLOCK.get().defaultBlockState();
+        int replaced = 0;
+        for (int x = 0; x < size.getX(); x++) {
+            for (int y = 0; y < size.getY(); y++) {
+                for (int z = 0; z < size.getZ(); z++) {
+                    BlockPos pos = origin.offset(x, y, z);
+                    if (level.getBlockState(pos).is(Blocks.BLACKSTONE_WALL)) {
+                        level.setBlock(pos, urnState, 3);
+                        replaced++;
+                    }
+                }
+            }
+        }
+        modjam.LOGGER.info("Replaced {} blackstone wall(s) with light urns", replaced);
     }
 }

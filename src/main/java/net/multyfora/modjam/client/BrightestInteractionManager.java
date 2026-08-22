@@ -17,7 +17,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
-import net.multyfora.modjam.network.DialogueCompletePayload;
+import net.multyfora.modjam.network.AcceptDealPayload;
+import net.multyfora.modjam.client.cutscene.CutsceneClientController;
+import net.multyfora.modjam.client.dialogue.RichText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -273,13 +275,17 @@ public class BrightestInteractionManager {
     }
 
     private static void startDialogue() {
-        List<Component> lines = DIALOGUE_LINES.stream().map(s -> (Component) Component.translatable(s)).toList();
-        DialogueSystem.getInstance().playSequence(lines, () -> {
-            Minecraft mc = Minecraft.getInstance();
-            var connection = mc.getConnection();
-            if (connection != null) {
-                connection.send(new DialogueCompletePayload().toVanillaServerbound());
-            }
-        });
+        Minecraft mc = Minecraft.getInstance();
+        var connection = mc.getConnection();
+        if (connection != null) {
+            connection.send(AcceptDealPayload.INSTANCE.toVanillaServerbound());
+        }
+        var controller = CutsceneClientController.getInstance();
+        List<RichText> richLines = DIALOGUE_LINES.stream()
+            .map(s -> RichText.parse(Component.translatable(s).getString()))
+            .toList();
+        DialogueSystem.getInstance().playRich(richLines,
+            controller::advanceSegment,
+            controller::onDialogueFinished);
     }
 }

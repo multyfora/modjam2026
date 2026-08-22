@@ -29,6 +29,8 @@ import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
 import net.multyfora.modjam.network.LightBeamPayload;
 import net.multyfora.modjam.network.OpenBrightestMenuPayload;
+import net.multyfora.modjam.network.StartCutscenePayload;
+import net.multyfora.modjam.client.cutscene.CutsceneClientController;
 
 @Mod(value = modjam.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = modjam.MODID, value = Dist.CLIENT)
@@ -65,6 +67,8 @@ public class modjamClient {
             (payload, context) -> FirstContactTransitionState.getInstance().startEntering());
         event.register(OpenBrightestMenuPayload.TYPE,
             (payload, context) -> BrightestInteractionManager.getInstance().openMenu());
+        event.register(StartCutscenePayload.TYPE,
+            (payload, context) -> CutsceneClientController.getInstance().start(payload));
         event.register(DialogueEventStartPayload.TYPE,
             (payload, context) -> DialogueEventClientHandler.getInstance().handle(payload));
         event.register(LightBeamPayload.TYPE,

@@ -13,6 +13,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.multyfora.modjam.modjam;
 import net.multyfora.modjam.dialogue.DialogueEventManager;
+import net.multyfora.modjam.cutscene.CutsceneManager;
 import net.multyfora.modjam.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.modjam.world.dimension.ModDimensions;
 
@@ -46,6 +47,7 @@ public class ModJamCommands {
                 .executes(context -> {
                     var player = (ServerPlayer) context.getSource().getEntity();
                     DialogueEventManager.resetPlayerProgress(player);
+                    CutsceneManager.resetPlayerProgress(player);
                     context.getSource().sendSuccess(
                         () -> Component.translatable("command.modjam.resetdialogues.success"), true);
                     return 1;
@@ -93,6 +95,52 @@ public class ModJamCommands {
                         }
                         context.getSource().sendSuccess(
                             () -> Component.translatable("command.modjam.playdialogue.single", name), true);
+                        return 1;
+                    })
+                )
+            )
+            .then(Commands.literal("playcutscene")
+                .requires(source -> source.getEntity() instanceof ServerPlayer)
+                .executes(context -> {
+                    var player = (ServerPlayer) context.getSource().getEntity();
+                    Set<Identifier> cutscenes = CutsceneManager.registeredCutscenes();
+                    if (cutscenes.isEmpty()) {
+                        context.getSource().sendFailure(
+                            Component.translatable("command.modjam.playcutscene.none"));
+                        return 0;
+                    }
+                    for (Identifier id : cutscenes) {
+                        CutsceneManager.runEvent(player, id);
+                    }
+                    context.getSource().sendSuccess(
+                        () -> Component.translatable("command.modjam.playcutscene.all", cutscenes.size()), true);
+                    return cutscenes.size();
+                })
+                .then(Commands.argument("cutscene", StringArgumentType.greedyString())
+                    .suggests((context, builder) -> {
+                        for (Identifier id : CutsceneManager.registeredCutscenes()) {
+                            builder.suggest(id.toString());
+                        }
+                        return builder.buildFuture();
+                    })
+                    .executes(context -> {
+                        var player = (ServerPlayer) context.getSource().getEntity();
+                        String name = StringArgumentType.getString(context, "cutscene");
+                        Identifier id;
+                        try {
+                            id = Identifier.parse(name);
+                        } catch (Exception e) {
+                            context.getSource().sendFailure(
+                                Component.translatable("command.modjam.playcutscene.invalid", name));
+                            return 0;
+                        }
+                        if (!CutsceneManager.runEvent(player, id)) {
+                            context.getSource().sendFailure(
+                                Component.translatable("command.modjam.playcutscene.unknown", name));
+                            return 0;
+                        }
+                        context.getSource().sendSuccess(
+                            () -> Component.translatable("command.modjam.playcutscene.single", name), true);
                         return 1;
                     })
                 )

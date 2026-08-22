@@ -8,7 +8,8 @@
     "GameRendererMixin",
     "GameRendererAccessor",
     "PostChainAccessor",
-    "PostPassAccessor"
+    "PostPassAccessor",
+    "CameraMixin"
   ],
   "mixins": [
     "AmethystClusterMixin",

@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
+import net.multyfora.modjam.block.CrackedQuartzBlock;
 import net.multyfora.modjam.block.SingularityCrystalBlock;
 import net.multyfora.modjam.block.SingularityCrystalDrain;
 import net.multyfora.modjam.item.BrightestItem;
@@ -60,6 +61,9 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.multyfora.modjam.dialogue.DialogueEventManager;
+import net.multyfora.modjam.cutscene.CutsceneManager;
+import net.multyfora.modjam.network.AcceptDealPayload;
+import net.multyfora.modjam.network.CutsceneCompletePayload;
 import net.multyfora.modjam.network.DialogueCompletePayload;
 import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
@@ -69,6 +73,7 @@ import net.multyfora.modjam.network.LightBeamPayload;
 import net.multyfora.modjam.network.OpenBrightestMenuPayload;
 import net.multyfora.modjam.network.OpenCheatSheetPayload;
 import net.multyfora.modjam.network.SavePaperPatternPayload;
+import net.multyfora.modjam.network.StartCutscenePayload;
 import net.multyfora.modjam.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.modjam.world.dimension.FirstContactUtils;
 import net.multyfora.modjam.world.dimension.ModDimensions;
@@ -125,6 +130,20 @@ public class modjam {
     );
     public static final DeferredItem<BlockItem> SINGULARITY_CRYSTAL_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("singularity_crystal", SINGULARITY_CRYSTAL_BLOCK);
 
+    public static final DeferredBlock<Block> LIGHT_URN_BLOCK = BLOCKS.registerBlock(
+        "light_urn",
+        Block::new,
+        p -> p.strength(1.5f).sound(SoundType.STONE).noOcclusion().lightLevel(state -> 1)
+    );
+    public static final DeferredItem<BlockItem> LIGHT_URN_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("light_urn", LIGHT_URN_BLOCK);
+
+    public static final DeferredBlock<CrackedQuartzBlock> CRACKED_QUARTZ_BLOCK = BLOCKS.registerBlock(
+        "cracked_quartz",
+        CrackedQuartzBlock::new,
+        p -> p.strength(1.0f).sound(SoundType.STONE)
+    );
+    public static final DeferredItem<BlockItem> CRACKED_QUARTZ_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("cracked_quartz", CRACKED_QUARTZ_BLOCK);
+
     public static final Identifier CHEAT_SHEET_ID = Identifier.fromNamespaceAndPath(MODID, "cheat_sheet");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> FIRST_CONTACT_MUSIC = SOUND_EVENTS.register(
@@ -153,6 +172,8 @@ public class modjam {
                 output.accept(JOURNAL_ITEM.get());
                 output.accept(LIGHT_WEAVER_ITEM.get());
                 output.accept(SINGULARITY_CRYSTAL_BLOCK_ITEM.get());
+                output.accept(LIGHT_URN_BLOCK_ITEM.get());
+                output.accept(CRACKED_QUARTZ_BLOCK_ITEM.get());
             }).build());
 
     public modjam(IEventBus modEventBus, ModContainer modContainer) {
@@ -174,6 +195,8 @@ public class modjam {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(DialogueEventManager.getInstance());
         NeoForge.EVENT_BUS.addListener(DialogueEventManager::onAddReloadListeners);
+        NeoForge.EVENT_BUS.register(CutsceneManager.getInstance());
+        NeoForge.EVENT_BUS.addListener(CutsceneManager::onAddReloadListeners);
         NeoForge.EVENT_BUS.register(SingularityCrystalDrain.getInstance());
         NeoForge.EVENT_BUS.register(LightBeamDestructionManager.getInstance());
 
@@ -208,6 +231,35 @@ public class modjam {
         registrar.playToClient(
             LightBeamPayload.TYPE,
             LightBeamPayload.STREAM_CODEC
+        );
+
+        registrar.playToClient(
+            StartCutscenePayload.TYPE,
+            StartCutscenePayload.STREAM_CODEC
+        );
+
+        registrar.playToServer(
+            CutsceneCompletePayload.TYPE,
+            CutsceneCompletePayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.player() instanceof ServerPlayer player
+                    && payload.id().equals(CutsceneManager.ACCEPTED_DEAL.toString())) {
+                    FirstContactLeaveFlow.startLeaveSequence(player);
+                }
+            }
+        );
+
+        registrar.playToServer(
+            AcceptDealPayload.TYPE,
+            AcceptDealPayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.player() instanceof ServerPlayer player) {
+                    player.getPersistentData().putBoolean(FirstContactUtils.ACCEPTED_DEAL_TAG.toString(), true);
+                    if (!CutsceneManager.runEvent(player, CutsceneManager.ACCEPTED_DEAL)) {
+                        FirstContactLeaveFlow.startLeaveSequence(player);
+                    }
+                }
+            }
         );
 
         registrar.playToServer(

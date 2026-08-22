@@ -1,6 +1,7 @@
 package net.multyfora.modjam.client;
 
 import net.multyfora.modjam.lightweaver.WeaverPaper;
+import net.multyfora.modjam.client.cutscene.CutsceneClientController;
 import net.multyfora.modjam.modjam;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -31,6 +32,7 @@ public class ClientEvents {
         BrightestInteractionManager.getInstance().tick();
         FirstContactMusicManager.getInstance().tick();
         SingularityDarknessManager.getInstance().tick();
+        CutsceneClientController.getInstance().tick();
         FirstContactShader.setIntensity(FirstContactTransitionState.getInstance().getIntensity());
     }
 }

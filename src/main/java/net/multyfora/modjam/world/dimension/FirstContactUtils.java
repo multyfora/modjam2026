@@ -22,6 +22,7 @@ import java.util.Set;
 
 public class FirstContactUtils {
     private static final Identifier ENTERED_TAG = Identifier.fromNamespaceAndPath("modjam", "entered_first_contact");
+    public static final Identifier ACCEPTED_DEAL_TAG = Identifier.fromNamespaceAndPath("modjam", "accepted_deal");
     private static final Vec3 BRIGHTEST_POS = new Vec3(0.5, 8.0, 19.5);
 
     public static void teleportToFirstContact(ServerPlayer player) {

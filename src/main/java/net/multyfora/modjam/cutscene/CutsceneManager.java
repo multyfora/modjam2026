@@ -1,4 +1,4 @@
-package net.multyfora.modjam.dialogue;
+package net.multyfora.modjam.cutscene;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -15,11 +15,12 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.phys.Vec3;
 import net.multyfora.modjam.modjam;
-import net.multyfora.modjam.network.DialogueEventStartPayload;
+import net.multyfora.modjam.dialogue.DialogueEventManager;
+import net.multyfora.modjam.network.StartCutscenePayload;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEnchantItemEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.resource.ListenerKey;
@@ -28,27 +29,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class DialogueEventManager extends SimplePreparableReloadListener<Map<Identifier, DialogueEventDefinition>> {
-    private static final String FOLDER = "dialogue_event";
-    private static final String PERSISTENCE_KEY = "modjam_dialogue_events";
-    private static final String TIMING_KEY = "modjam_dialogue_times";
+public class CutsceneManager extends SimplePreparableReloadListener<Map<Identifier, CutsceneDefinition>> {
+    private static final String FOLDER = "cutscene";
+    private static final String PERSISTENCE_KEY = "modjam_cutscenes";
     private static final int CHECK_INTERVAL = 4;
 
-    public static final Identifier ENCHANTING_TABLE_USED = Identifier.fromNamespaceAndPath(modjam.MODID, "enchanting_table_used");
-    public static final Identifier OVERWORLD_WELCOME = Identifier.fromNamespaceAndPath(modjam.MODID, "overworld_welcome");
+    public static final Identifier ACCEPTED_DEAL = Identifier.fromNamespaceAndPath(modjam.MODID, "accepted_deal");
 
-    private static final DialogueEventManager INSTANCE = new DialogueEventManager();
+    private static final CutsceneManager INSTANCE = new CutsceneManager();
 
-    private volatile Map<Identifier, DialogueEventDefinition> definitions = Map.of();
+    private volatile Map<Identifier, CutsceneDefinition> definitions = Map.of();
     private long tickCounter;
 
-    public static DialogueEventManager getInstance() {
+    public static CutsceneManager getInstance() {
         return INSTANCE;
     }
 
     public static void onAddReloadListeners(AddServerReloadListenersEvent event) {
         event.addRetainedListener(
-            ListenerKey.create(Identifier.fromNamespaceAndPath(modjam.MODID, "dialogue_events")),
+            ListenerKey.create(Identifier.fromNamespaceAndPath(modjam.MODID, "cutscenes")),
             getInstance()
         );
     }
@@ -58,16 +57,8 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
         tickServer(event.getServer());
     }
 
-    @SubscribeEvent
-    public void onPlayerEnchantItem(PlayerEnchantItemEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            player.closeContainer();
-            tryFire(player, ENCHANTING_TABLE_USED);
-        }
-    }
-
     public static boolean tryFire(ServerPlayer player, Identifier id) {
-        DialogueEventDefinition definition = INSTANCE.definitions.get(id);
+        CutsceneDefinition definition = INSTANCE.definitions.get(id);
         if (definition == null) return false;
         if (definition.once() && isFired(player, id)) return false;
         fire(player, id, definition);
@@ -75,13 +66,13 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
     }
 
     public static boolean runEvent(ServerPlayer player, Identifier id) {
-        DialogueEventDefinition definition = INSTANCE.definitions.get(id);
+        CutsceneDefinition definition = INSTANCE.definitions.get(id);
         if (definition == null) return false;
         fire(player, id, definition);
         return true;
     }
 
-    public static Set<Identifier> registeredEvents() {
+    public static Set<Identifier> registeredCutscenes() {
         return INSTANCE.definitions.keySet();
     }
 
@@ -94,28 +85,45 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
     }
 
     private void checkPlayer(ServerPlayer player) {
-        for (Map.Entry<Identifier, DialogueEventDefinition> entry : definitions.entrySet()) {
-            DialogueEventDefinition definition = entry.getValue();
+        for (Map.Entry<Identifier, CutsceneDefinition> entry : definitions.entrySet()) {
+            CutsceneDefinition definition = entry.getValue();
             if (definition.once() && isFired(player, entry.getKey())) continue;
-            if (matchesAll(definition, player)) {
+            boolean matches = true;
+            for (var trigger : definition.triggers()) {
+                if (!trigger.matches(player)) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) {
                 fire(player, entry.getKey(), definition);
             }
         }
     }
 
-    private static boolean matchesAll(DialogueEventDefinition definition, ServerPlayer player) {
-        for (DialogueTrigger trigger : definition.triggers()) {
-            if (!trigger.matches(player)) return false;
-        }
-        return true;
-    }
-
-    private static void fire(ServerPlayer player, Identifier id, DialogueEventDefinition definition) {
+    private static void fire(ServerPlayer player, Identifier id, CutsceneDefinition definition) {
         if (definition.once()) {
             markFired(player, id);
         }
-        recordFiredDayTime(player, id);
-        PacketDistributor.sendToPlayer(player, new DialogueEventStartPayload(definition.lines()));
+        DialogueEventManager.recordFiredDayTime(player, id);
+        var frames = definition.keyframes().stream()
+            .map(CutsceneManager::toFrame)
+            .toList();
+        PacketDistributor.sendToPlayer(player,
+            new StartCutscenePayload(id.toString(), definition.durationTicks(), frames, definition.lines(),
+                definition.lineSynced()));
+    }
+
+    private static StartCutscenePayload.Frame toFrame(CutsceneKeyframe keyframe) {
+        Vec3 pos = keyframe.pos();
+        Vec3 lookAt = keyframe.lookAt().orElse(Vec3.ZERO);
+        Vec3 rot = keyframe.rot().orElse(Vec3.ZERO);
+        return new StartCutscenePayload.Frame(
+            keyframe.time(),
+            pos.x, pos.y, pos.z,
+            keyframe.lookAt().isPresent(), lookAt.x, lookAt.y, lookAt.z,
+            keyframe.rot().isPresent(), (float) rot.x, (float) rot.y
+        );
     }
 
     private static boolean isFired(ServerPlayer player, Identifier id) {
@@ -133,18 +141,6 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
 
     public static void resetPlayerProgress(ServerPlayer player) {
         player.getPersistentData().remove(PERSISTENCE_KEY);
-        player.getPersistentData().remove(TIMING_KEY);
-    }
-
-    public static long getFiredDayTime(ServerPlayer player, Identifier id) {
-        return player.getPersistentData().getCompoundOrEmpty(TIMING_KEY)
-            .getLong(id.toString()).orElse(-1L);
-    }
-
-    public static void recordFiredDayTime(ServerPlayer player, Identifier id) {
-        CompoundTag times = player.getPersistentData().getCompoundOrEmpty(TIMING_KEY);
-        times.putLong(id.toString(), player.level().getOverworldClockTime());
-        player.getPersistentData().put(TIMING_KEY, times);
     }
 
     private static ListTag firedList(ServerPlayer player) {
@@ -158,9 +154,9 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
     }
 
     @Override
-    protected Map<Identifier, DialogueEventDefinition> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected Map<Identifier, CutsceneDefinition> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
         RegistryOps<JsonElement> ops = getRegistryLookup().createSerializationContext(JsonOps.INSTANCE);
-        Map<Identifier, DialogueEventDefinition> map = new HashMap<>();
+        Map<Identifier, CutsceneDefinition> map = new HashMap<>();
         for (Map.Entry<Identifier, Resource> entry : resourceManager.listResources(FOLDER, path -> path.getPath().endsWith(".json")).entrySet()) {
             Identifier file = entry.getKey();
             String path = file.getPath();
@@ -170,19 +166,19 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
             );
             try (var reader = entry.getValue().openAsReader()) {
                 var element = JsonParser.parseReader(reader);
-                DialogueEventDefinition.CODEC.parse(ops, element)
-                    .resultOrPartial(error -> modjam.LOGGER.error("Failed to load dialogue event {}: {}", file, error))
+                CutsceneDefinition.CODEC.parse(ops, element)
+                    .resultOrPartial(error -> modjam.LOGGER.error("Failed to load cutscene {}: {}", file, error))
                     .ifPresent(definition -> map.put(id, definition));
             } catch (Exception e) {
-                modjam.LOGGER.error("Failed to load dialogue event {}", file, e);
+                modjam.LOGGER.error("Failed to load cutscene {}", file, e);
             }
         }
         return Map.copyOf(map);
     }
 
     @Override
-    protected void apply(Map<Identifier, DialogueEventDefinition> map, ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected void apply(Map<Identifier, CutsceneDefinition> map, ResourceManager resourceManager, ProfilerFiller profiler) {
         this.definitions = map;
-        modjam.LOGGER.info("Loaded {} modjam dialogue event(s)", map.size());
+        modjam.LOGGER.info("Loaded {} modjam cutscene(s)", map.size());
     }
 }
