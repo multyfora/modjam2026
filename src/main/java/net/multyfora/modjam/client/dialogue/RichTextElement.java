@@ -45,6 +45,7 @@ public class RichTextElement extends UIElement {
     private float lineSpacing = DEFAULT_LINE_SPACING;
     private float layoutHeight = Float.NaN;
     private int revealChars;
+    private boolean centered;
     private boolean recomputing;
 
     public RichTextElement() {
@@ -75,6 +76,11 @@ public class RichTextElement extends UIElement {
 
     public RichTextElement setRevealChars(int revealChars) {
         this.revealChars = Math.max(0, revealChars);
+        return this;
+    }
+
+    public RichTextElement setCentered(boolean centered) {
+        this.centered = centered;
         return this;
     }
 
@@ -266,6 +272,7 @@ public class RichTextElement extends UIElement {
         for (int li = 0; li < lines.size(); li++) {
             var line = lines.get(li);
             float y = baseY + li * (element.fontSize + element.lineSpacing);
+            float lineOffset = element.centered ? Math.max(0f, (element.getContentWidth() - line.width()) / 2f) : 0f;
             for (var word : line.words()) {
                 String text = word.text;
                 int a = word.absStart;
@@ -288,7 +295,7 @@ public class RichTextElement extends UIElement {
                     t = clamp((now - revealedAt) / 1000f, 0f, 10f);
                 }
 
-                float x = baseX + word.x;
+                float x = baseX + lineOffset + word.x;
                 drawWord(c, font, word, shown, fully, x, y, scale, t);
                 wordIndex++;
             }

@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
+import net.multyfora.modjam.block.SoulLightBlockEntity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,9 +69,11 @@ public final class LightEnergyManager {
                     if (dx == 0 && dy == 0 && dz == 0) continue;
                     BlockPos neighbor = pos.offset(dx, dy, dz);
                     BlockState state = level.getBlockState(neighbor);
-                    if (state.getBlock() == Blocks.AMETHYST_CLUSTER
-                            && level.getBlockEntity(neighbor) instanceof AmethystCrystalBlockEntity crystal) {
-                        crystal.useLight();
+                    if (!isSource(state.getBlock())) continue;
+                    switch (level.getBlockEntity(neighbor)) {
+                        case AmethystCrystalBlockEntity crystal -> crystal.useLight();
+                        case SoulLightBlockEntity soul -> soul.useLight();
+                        default -> { }
                     }
                 }
             }

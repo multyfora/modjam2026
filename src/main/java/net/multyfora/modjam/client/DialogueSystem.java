@@ -42,6 +42,7 @@ public class DialogueSystem {
     private int displayedLength;
     private int ticksSinceComplete;
     private boolean leading;
+    private boolean labelCentered;
     private int leadTicks;
     private int fadeTicks;
     private Runnable onComplete;
@@ -64,6 +65,11 @@ public class DialogueSystem {
     }
 
     public void playMarkup(List<String> lines, Runnable onComplete) {
+        playMarkup(lines, null, onComplete);
+    }
+
+    public void playMarkup(List<String> lines, boolean centered, Runnable onComplete) {
+        this.labelCentered = centered;
         playMarkup(lines, null, onComplete);
     }
 
@@ -98,6 +104,7 @@ public class DialogueSystem {
         this.ticksSinceComplete = 0;
         this.fadeTicks = 0;
         this.active = true;
+        label.setCentered(labelCentered);
         label.setText(queue.isEmpty() ? RichText.EMPTY : queue.get(0));
         label.setRevealChars(0);
     }
@@ -162,6 +169,7 @@ public class DialogueSystem {
         displayedLength = 0;
         ticksSinceComplete = 0;
         leading = false;
+        labelCentered = false;
         leadTicks = 0;
         onComplete = null;
         onLineChange = null;

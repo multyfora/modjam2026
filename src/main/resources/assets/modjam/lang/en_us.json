@@ -4,12 +4,16 @@
   "item.modjam.example_item": "Example Item",
   "item.modjam.brightest": "Brightest",
   "item.modjam.discovery_journal": "Discovery Journal",
+  "item.modjam.mystical_monocle": "Mystical Monocle",
   "item.modjam.light_weaver": "Light Weaver",
   "block.modjam.singularity_crystal": "Singularity Crystal",
   "block.modjam.light_urn": "Light Urn",
   "block.modjam.cracked_quartz": "Cracked Quartz Block",
 
   "enchantment.modjam.light_beam": "Light Beam",
+  "enchantment.modjam.glowmark": "Glowmark",
+  "enchantment.modjam.light_drain": "Light Drain",
+  "effect.modjam.light_drain": "Light Drain",
 
   "modjam.configuration.title": "modjam Configs",
   "modjam.configuration.section.modjam.common.toml": "modjam Configs",

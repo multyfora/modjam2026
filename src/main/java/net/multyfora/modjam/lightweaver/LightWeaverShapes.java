@@ -513,6 +513,17 @@ public final class LightWeaverShapes {
         return null;
     }
 
+    public static final int LIGHT_DRAIN_TIER = 7;
+
+    public static final WeaverShape EMPTY_SHAPE = new WeaverShape(
+        "light_drain", prettyName("light_drain"), new boolean[CELLS],
+        modjam.LIGHT_DRAIN_ENCHANTMENT.getKey(), LIGHT_DRAIN_TIER);
+
+    public static WeaverShape matchOrEmpty(boolean[] cells) {
+        if (isEmpty(cells)) return EMPTY_SHAPE;
+        return match(cells);
+    }
+
     public static boolean isEmpty(boolean[] cells) {
         for (boolean cell : cells) {
             if (cell) return false;

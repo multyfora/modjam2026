@@ -19,6 +19,8 @@ import net.multyfora.modjam.client.BrightestInteractionManager;
 import net.multyfora.modjam.client.DialogueEventClientHandler;
 import net.multyfora.modjam.client.DialogueSystem;
 import net.multyfora.modjam.client.FirstContactOverlay;
+import net.multyfora.modjam.client.LightDrainClientHandler;
+import net.multyfora.modjam.client.MonocleHud;
 import net.multyfora.modjam.client.FirstContactTransitionState;
 import net.multyfora.modjam.client.ShotBeamImpactOverlay;
 import net.multyfora.modjam.client.ShotBeamRenderer;
@@ -54,6 +56,11 @@ public class modjamClient {
         );
         FirstContactOverlay.register(event);
         ShotBeamImpactOverlay.register(event);
+        LightDrainClientHandler.register(event);
+        event.registerAboveAll(
+            Identifier.fromNamespaceAndPath(modjam.MODID, "monocle_hud"),
+            (ModularHudLayer) () -> MonocleHud.getInstance().getModularUI()
+        );
     }
 
     private static void onRegisterClientPayloadHandlers(RegisterClientPayloadHandlersEvent event) {

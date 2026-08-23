@@ -56,7 +56,7 @@ public class CrackedQuartzBlock extends Block {
                 if (belowVariant == LOOP_END) {
                     return belowVariant + LOOP_END;
                 }
-                boolean stepUp = random.nextBoolean();
+                boolean stepUp = random.nextInt(4) < 3;
                 return stepUp ? belowVariant + 1 : belowVariant + LOOP_END;
             }
         }

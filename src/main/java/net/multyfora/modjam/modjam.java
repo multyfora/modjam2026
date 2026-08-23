@@ -24,6 +24,11 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.effect.MobEffect;
+import net.multyfora.modjam.effect.LightDrainEffect;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -32,9 +37,11 @@ import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
 import net.multyfora.modjam.block.CrackedQuartzBlock;
 import net.multyfora.modjam.block.SingularityCrystalBlock;
 import net.multyfora.modjam.block.SingularityCrystalDrain;
+import net.multyfora.modjam.block.SoulLightBlockEntity;
 import net.multyfora.modjam.item.BrightestItem;
 import net.multyfora.modjam.item.JournalItem;
 import net.multyfora.modjam.item.LightWeaverItem;
+import net.multyfora.modjam.item.MysticalMonocle;
 import net.multyfora.modjam.light.LightEnergyManager;
 import net.multyfora.modjam.lightweaver.CheatSheetUI;
 import net.multyfora.modjam.lightweaver.LightBeamDestructionManager;
@@ -92,12 +99,28 @@ public class modjam {
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
     public static final DeferredRegister<Enchantment> ENCHANTMENTS = DeferredRegister.create(Registries.ENCHANTMENT, MODID);
+    public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, MODID);
+
+    public static final DeferredHolder<MobEffect, LightDrainEffect> LIGHT_DRAIN_EFFECT = MOB_EFFECTS.register("light_drain",
+        LightDrainEffect::new);
 
     public static final DeferredHolder<Enchantment, Enchantment> LIGHT_BEAM_ENCHANTMENT = ENCHANTMENTS.register("light_beam",
         () -> Enchantment.enchantment(Enchantment.definition(
             HolderSet.direct(), 1, 1, new Enchantment.Cost(1, 0), new Enchantment.Cost(10, 0), 8,
             EquipmentSlotGroup.MAINHAND, EquipmentSlotGroup.OFFHAND
         )).build(Identifier.fromNamespaceAndPath(MODID, "light_beam")));
+
+    public static final DeferredHolder<Enchantment, Enchantment> GLOWMARK_ENCHANTMENT = ENCHANTMENTS.register("glowmark",
+        () -> Enchantment.enchantment(Enchantment.definition(
+            HolderSet.direct(), 1, 1, new Enchantment.Cost(1, 0), new Enchantment.Cost(10, 0), 8,
+            EquipmentSlotGroup.MAINHAND
+        )).build(Identifier.fromNamespaceAndPath(MODID, "glowmark")));
+
+    public static final DeferredHolder<Enchantment, Enchantment> LIGHT_DRAIN_ENCHANTMENT = ENCHANTMENTS.register("light_drain",
+        () -> Enchantment.enchantment(Enchantment.definition(
+            HolderSet.direct(), 1, 1, new Enchantment.Cost(1, 0), new Enchantment.Cost(10, 0), 8,
+            EquipmentSlotGroup.MAINHAND
+        )).build(Identifier.fromNamespaceAndPath(MODID, "light_drain")));
 
     public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", p -> p.mapColor(MapColor.STONE));
     public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
@@ -108,6 +131,11 @@ public class modjam {
     public static final DeferredItem<Item> BRIGHTEST = ITEMS.registerItem("brightest", BrightestItem::new);
 
     public static final DeferredItem<Item> JOURNAL_ITEM = ITEMS.registerItem("discovery_journal", JournalItem::new);
+
+    public static final DeferredItem<Item> MYSTICAL_MONOCLE = ITEMS.registerItem("mystical_monocle",
+        properties -> new MysticalMonocle(properties
+            .stacksTo(1)
+            .component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD).build())));
 
     public static final DeferredHolder<EntityType<?>, EntityType<LightWeaverEntity>> LIGHT_WEAVER_ENTITY =
         ENTITY_TYPES.register("light_weaver", () -> EntityType.Builder.of(LightWeaverEntity::new, MobCategory.MISC)
@@ -121,6 +149,13 @@ public class modjam {
         BLOCK_ENTITY_TYPES.register(
             "amethyst_crystal",
             () -> new BlockEntityType<>(AmethystCrystalBlockEntity::new, Set.of(Blocks.AMETHYST_CLUSTER))
+        );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SoulLightBlockEntity>> SOUL_LIGHT_BLOCK_ENTITY =
+        BLOCK_ENTITY_TYPES.register(
+            "soul_light",
+            () -> new BlockEntityType<>(SoulLightBlockEntity::new,
+                Set.of(Blocks.SOUL_LANTERN, Blocks.SOUL_TORCH, Blocks.SOUL_CAMPFIRE))
         );
 
     public static final DeferredBlock<SingularityCrystalBlock> SINGULARITY_CRYSTAL_BLOCK = BLOCKS.registerBlock(
@@ -170,6 +205,7 @@ public class modjam {
                 output.accept(EXAMPLE_BLENDER_BLOCK_ITEM.get());
                 output.accept(BRIGHTEST.get());
                 output.accept(JOURNAL_ITEM.get());
+                output.accept(MYSTICAL_MONOCLE.get());
                 output.accept(LIGHT_WEAVER_ITEM.get());
                 output.accept(SINGULARITY_CRYSTAL_BLOCK_ITEM.get());
                 output.accept(LIGHT_URN_BLOCK_ITEM.get());
@@ -188,6 +224,7 @@ public class modjam {
         SOUND_EVENTS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
         ENCHANTMENTS.register(modEventBus);
+        MOB_EFFECTS.register(modEventBus);
         ModDimensions.BIOMES.register(modEventBus);
 
         PlayerUIMenuType.register(CHEAT_SHEET_ID, player -> p -> CheatSheetUI.create(p));
@@ -305,6 +342,10 @@ public class modjam {
         LOGGER.info("HELLO FROM COMMON SETUP");
 
         LightEnergyManager.registerSource(Blocks.AMETHYST_CLUSTER, 1.0, 3.5);
+        LightEnergyManager.registerSource(Blocks.BEACON, 100.0, 0.5);
+        LightEnergyManager.registerSource(Blocks.SOUL_LANTERN, 1.0, 5.0);
+        LightEnergyManager.registerSource(Blocks.SOUL_TORCH, 1.0, 5.0);
+        LightEnergyManager.registerSource(Blocks.SOUL_CAMPFIRE, 1.0, 5.0);
 
         if (Config.LOG_DIRT_BLOCK.getAsBoolean()) {
             LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));

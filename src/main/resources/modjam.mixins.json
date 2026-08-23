@@ -14,9 +14,12 @@
   "mixins": [
     "AmethystClusterMixin",
     "BowItemMixin",
+    "CampfireBlockMixin",
+    "LanternBlockMixin",
     "LightEngineMixin",
     "LevelSetBlockMixin",
-    "ProjectileWeaponItemAccessor"
+    "ProjectileWeaponItemAccessor",
+    "TorchBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 0

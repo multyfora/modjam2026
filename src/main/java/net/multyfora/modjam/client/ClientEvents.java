@@ -33,6 +33,7 @@ public class ClientEvents {
         FirstContactMusicManager.getInstance().tick();
         SingularityDarknessManager.getInstance().tick();
         CutsceneClientController.getInstance().tick();
+        MonocleHud.getInstance().tick();
         FirstContactShader.setIntensity(FirstContactTransitionState.getInstance().getIntensity());
     }
 }

@@ -213,7 +213,7 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
         }
 
         boolean[] cells = LightWeaverShapes.unpack(pendingPattern);
-        WeaverShape shape = LightWeaverShapes.match(cells);
+        WeaverShape shape = LightWeaverShapes.matchOrEmpty(cells);
         if (shape == null) {
             return;
         }
@@ -272,7 +272,7 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
 
         String packed = WeaverPaper.readPattern(paper);
         boolean[] cells = packed == null ? null : LightWeaverShapes.unpack(packed);
-        if (cells == null || LightWeaverShapes.isEmpty(cells) || LightWeaverShapes.match(cells) == null) {
+        if (cells == null || LightWeaverShapes.matchOrEmpty(cells) == null) {
             playFail();
             return InteractionResult.SUCCESS;
         }
@@ -296,7 +296,7 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
         }
 
         boolean[] cells = LightWeaverShapes.unpack(pendingPattern);
-        WeaverShape shape = LightWeaverShapes.match(cells);
+        WeaverShape shape = LightWeaverShapes.matchOrEmpty(cells);
         if (shape == null) {
             pendingPattern = null;
             entityData.set(DATA_PAPER, ItemStack.EMPTY);
