@@ -11,12 +11,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SingularityCrystalBlock extends Block {
     public static final BooleanProperty PULSE = BooleanProperty.create("pulse");
     private static final int PULSE_DURATION = 2;
-    private static final VoxelShape SHAPE = box(6.0, 0.0, 6.0, 10.0, 8.0, 10.0);
+    private static final VoxelShape SHAPE = Shapes.or(
+        box(4.0, 0.0, 4.0, 12.0, 2.0, 12.0),
+        box(5.0, 2.0, 5.0, 11.0, 12.0, 11.0),
+        box(4.0, 2.0, 6.0, 12.0, 10.0, 10.0),
+        box(6.0, 2.0, 4.0, 10.0, 10.0, 12.0)
+    );
 
     public SingularityCrystalBlock(Properties properties) {
         super(properties);

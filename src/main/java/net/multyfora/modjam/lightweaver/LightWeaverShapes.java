@@ -233,7 +233,17 @@ public final class LightWeaverShapes {
                     "........X",
                     ".........",
                     "........."),
-            shape("light_beam", modjam.LIGHT_BEAM_ENCHANTMENT.getKey(), 6,
+            shape("glowmark", modjam.GLOWMARK_ENCHANTMENT, 8,
+                    ".........",
+                    "...XXX...",
+                    "..X...X..",
+                    ".X..X..X.",
+                    ".X.....X.",
+                    ".X..X..X.",
+                    "..X...X..",
+                    "...XXX...",
+                    "........."),
+            shape("light_beam", modjam.LIGHT_BEAM_ENCHANTMENT, 6,
                     ".........",
                     ".....X...",
                     "....XX...",
@@ -517,7 +527,7 @@ public final class LightWeaverShapes {
 
     public static final WeaverShape EMPTY_SHAPE = new WeaverShape(
         "light_drain", prettyName("light_drain"), new boolean[CELLS],
-        modjam.LIGHT_DRAIN_ENCHANTMENT.getKey(), LIGHT_DRAIN_TIER);
+        modjam.LIGHT_DRAIN_ENCHANTMENT, LIGHT_DRAIN_TIER);
 
     public static WeaverShape matchOrEmpty(boolean[] cells) {
         if (isEmpty(cells)) return EMPTY_SHAPE;

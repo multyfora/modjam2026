@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": { "model": "modjam:block/mystic_brazier" },
+    "lit=true": { "model": "modjam:block/mystic_brazier_lit" }
+  }
+}

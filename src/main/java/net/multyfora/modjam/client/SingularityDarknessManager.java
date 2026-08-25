@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.multyfora.modjam.block.CrystalTracker;
@@ -43,6 +44,12 @@ public class SingularityDarknessManager {
     }
 
     public void updateScreenData(CameraRenderState camera) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.player.hasEffect(MobEffects.NIGHT_VISION)) {
+            intensity = 0f;
+            return;
+        }
+
         Vec3 camPos = camera.pos;
 
         BlockPos best = null;

@@ -1,11 +1,12 @@
 {
 	"format_version": "1.21.11",
 	"credit": "Made with Blockbench",
+	"parent": "block/block",
 	"textures": {
-		"0": "mossy_quartz_side",
-		"1": "mossy_quartz_top",
+		"0": "modjam:block/mossy_quartz_side",
+		"1": "modjam:block/mossy_quartz_top",
 		"2": "modjam:block/mossy_quartz_bottom",
-		"particle": "mossy_quartz_side"
+		"particle": "modjam:block/mossy_quartz_side"
 	},
 	"elements": [
 		{

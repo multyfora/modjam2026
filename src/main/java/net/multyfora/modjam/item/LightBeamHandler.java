@@ -62,7 +62,7 @@ public final class LightBeamHandler {
 
     public static boolean hasLightBeamEnchantment(Level level, ItemStack stack) {
         Holder<Enchantment> enchantment = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
-            .get(modjam.LIGHT_BEAM_ENCHANTMENT.getKey()).orElse(null);
+            .get(modjam.LIGHT_BEAM_ENCHANTMENT).orElse(null);
         return enchantment != null && stack.getEnchantments().getLevel(enchantment) >= 1;
     }
 

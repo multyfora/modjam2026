@@ -7,14 +7,13 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.multyfora.modjam.modjam;
 
-
-public class AmethystCrystalBlockEntity extends BlockEntity {
+public class MysticBrazierBlockEntity extends BlockEntity {
     public static final int MAX_CHARGES = 3;
 
-    private int charges = MAX_CHARGES;
+    private int charges = 0;
 
-    public AmethystCrystalBlockEntity(BlockPos pos, BlockState state) {
-        super(modjam.AMETHYST_CRYSTAL_BLOCK_ENTITY.get(), pos, state);
+    public MysticBrazierBlockEntity(BlockPos pos, BlockState state) {
+        super(modjam.MYSTIC_BRAZIER_BLOCK_ENTITY.get(), pos, state);
     }
 
     public int getCharges() {
@@ -25,24 +24,23 @@ public class AmethystCrystalBlockEntity extends BlockEntity {
         if (charges >= MAX_CHARGES || getLevel() == null) return false;
         charges++;
         setChanged();
+        getLevel().setBlock(worldPosition, getBlockState().setValue(MysticBrazierBlock.LIT, true), 3);
         return true;
     }
 
-    public void setCharges(int value) {
-        charges = Math.clamp(value, 0, MAX_CHARGES);
-        setChanged();
-    }
-
-    public boolean useLight() {
+    public boolean useCharge() {
         if (charges <= 0 || getLevel() == null) return false;
         charges--;
         setChanged();
         if (charges <= 0) {
-            BlockState crystalState = modjam.SINGULARITY_CRYSTAL_BLOCK.get().defaultBlockState()
-                    .setValue(SingularityCrystalBlock.PULSE, true);
-            getLevel().setBlock(worldPosition, crystalState, 3);
+            getLevel().setBlock(worldPosition, getBlockState().setValue(MysticBrazierBlock.LIT, false), 3);
         }
         return true;
+    }
+
+    public void snuff() {
+        charges = 0;
+        setChanged();
     }
 
     @Override
@@ -54,6 +52,6 @@ public class AmethystCrystalBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        charges = input.getIntOr("charges", MAX_CHARGES);
+        charges = input.getIntOr("charges", 0);
     }
 }

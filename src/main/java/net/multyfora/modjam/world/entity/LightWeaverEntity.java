@@ -506,7 +506,7 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
             if (LightWeaverEntity.this.isProcessing() || target == null) {
                 return false;
             }
-            return LightEnergyManager.isSource(LightWeaverEntity.this.level().getBlockState(target).getBlock())
+            return LightEnergyManager.isActiveSource(LightWeaverEntity.this.level().getBlockState(target))
                     && distanceToTargetSq() > LIGHT_STOP_DISTANCE_SQ;
         }
 
@@ -569,7 +569,7 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
             BlockPos best = null;
             double bestDistanceSq = Double.MAX_VALUE;
             for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-                if (!LightEnergyManager.isSource(LightWeaverEntity.this.level().getBlockState(pos).getBlock())) {
+                if (!LightEnergyManager.isActiveSource(LightWeaverEntity.this.level().getBlockState(pos))) {
                     continue;
                 }
                 double distanceSq = LightWeaverEntity.this.distanceToSqr(Vec3.atCenterOf(pos));

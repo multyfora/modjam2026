@@ -3,32 +3,45 @@ package net.multyfora.modjam.light;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
 import net.multyfora.modjam.block.SoulLightBlockEntity;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public final class LightEnergyManager {
     public static final int RANGE = 2;
 
-    private static final Map<Block, LightSource> SOURCES = new HashMap<>();
+    private record RegisteredSource(LightSource source, Predicate<BlockState> active) {}
+
+    private static final Map<Block, RegisteredSource> SOURCES = new HashMap<>();
 
     private LightEnergyManager() {
     }
 
     public static void registerSource(Block block, double intensity, double mysticalComponent) {
-        SOURCES.put(block, new LightSource(intensity, mysticalComponent));
+        registerSource(block, intensity, mysticalComponent, state -> true);
+    }
+
+    public static void registerSource(Block block, double intensity, double mysticalComponent,
+                                      Predicate<BlockState> active) {
+        SOURCES.put(block, new RegisteredSource(new LightSource(intensity, mysticalComponent), active));
     }
 
     public static LightSource getSource(Block block) {
-        return SOURCES.get(block);
+        RegisteredSource registered = SOURCES.get(block);
+        return registered == null ? null : registered.source();
     }
 
     public static boolean isSource(Block block) {
         return SOURCES.containsKey(block);
+    }
+
+    public static boolean isActiveSource(BlockState state) {
+        RegisteredSource registered = SOURCES.get(state.getBlock());
+        return registered != null && registered.active().test(state);
     }
 
     public static LightEnergy compute(Level level, BlockPos pos) {
@@ -40,12 +53,16 @@ public final class LightEnergyManager {
             for (int dy = -RANGE; dy <= RANGE; dy++) {
                 for (int dz = -RANGE; dz <= RANGE; dz++) {
                     if (dx == 0 && dy == 0 && dz == 0) continue;
-                    LightSource source = SOURCES.get(level.getBlockState(pos.offset(dx, dy, dz)).getBlock());
-                    if (source != null) {
-                        intensity += source.intensity();
-                        componentSum += source.mysticalComponent();
-                        componentCount++;
+                    BlockState state = level.getBlockState(pos.offset(dx, dy, dz));
+                    RegisteredSource registered = SOURCES.get(state.getBlock());
+                    if (registered == null || !registered.active().test(state)) continue;
+                    LightSource source = registered.source();
+                    if (level.getBlockEntity(pos.offset(dx, dy, dz)) instanceof TunableLightSource tunable) {
+                        source = new LightSource(source.intensity(), tunable.tunedMystical());
                     }
+                    intensity += source.intensity();
+                    componentSum += source.mysticalComponent();
+                    componentCount++;
                 }
             }
         }

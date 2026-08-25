@@ -4,6 +4,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffects;
 import net.multyfora.modjam.modjam;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -19,7 +20,10 @@ public class LightDrainClientHandler {
 
     public static boolean isActive() {
         var player = Minecraft.getInstance().player;
-        return player != null && player.hasEffect(modjam.LIGHT_DRAIN_EFFECT);
+        if (player == null || player.hasEffect(MobEffects.NIGHT_VISION)) {
+            return false;
+        }
+        return player.hasEffect(modjam.LIGHT_DRAIN_EFFECT);
     }
 
     public static void register(RegisterGuiLayersEvent event) {

@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "modjam:item/singularity_crystal"
+    "model": "modjam:block/mossy_quartz"
   }
 }

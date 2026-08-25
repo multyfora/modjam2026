@@ -23,6 +23,7 @@ sourceSets.main.resources {
 
     // Exclude common development only resources from finalized outputs
     exclude("**/*.bbmodel") // BlockBench project files
+    exclude("**/*.aseprite") // Aseprite source files
     exclude("src/generated/**/.cache") // datagen cache files
 }
 
@@ -143,6 +144,8 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_name               : mod_name,
             mod_license            : mod_license,
             mod_version            : mod_version,
+            geckolib_version       : geckolib_version,
+            ldlib2_version         : ldlib2_version,
     ]
     inputs.properties replaceProperties
     expand replaceProperties

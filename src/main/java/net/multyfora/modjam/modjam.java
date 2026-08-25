@@ -5,8 +5,8 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import com.lowdragmc.lowdraglib2.gui.factory.PlayerUIMenuType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -15,7 +15,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
@@ -26,6 +25,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.effect.MobEffect;
 import net.multyfora.modjam.effect.LightDrainEffect;
@@ -35,13 +37,19 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
 import net.multyfora.modjam.block.CrackedQuartzBlock;
+import net.multyfora.modjam.block.MysticBrazierBlock;
+import net.multyfora.modjam.block.MysticBrazierBlockEntity;
+import net.multyfora.modjam.block.PortableStarBlock;
+import net.multyfora.modjam.block.PortableStarBlockEntity;
 import net.multyfora.modjam.block.SingularityCrystalBlock;
 import net.multyfora.modjam.block.SingularityCrystalDrain;
 import net.multyfora.modjam.block.SoulLightBlockEntity;
 import net.multyfora.modjam.item.BrightestItem;
 import net.multyfora.modjam.item.JournalItem;
+import net.multyfora.modjam.item.LightBeamHandler;
 import net.multyfora.modjam.item.LightWeaverItem;
 import net.multyfora.modjam.item.MysticalMonocle;
+import net.multyfora.modjam.item.SealedSingularityItem;
 import net.multyfora.modjam.light.LightEnergyManager;
 import net.multyfora.modjam.lightweaver.CheatSheetUI;
 import net.multyfora.modjam.lightweaver.LightBeamDestructionManager;
@@ -58,7 +66,6 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -78,8 +85,8 @@ import net.multyfora.modjam.network.FirstContactLeavePayload;
 import net.multyfora.modjam.network.FirstContactTogglePayload;
 import net.multyfora.modjam.network.LightBeamPayload;
 import net.multyfora.modjam.network.OpenBrightestMenuPayload;
-import net.multyfora.modjam.network.OpenCheatSheetPayload;
 import net.multyfora.modjam.network.SavePaperPatternPayload;
+import net.multyfora.modjam.network.SetStarMysticalPayload;
 import net.multyfora.modjam.network.StartCutscenePayload;
 import net.multyfora.modjam.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.modjam.world.dimension.FirstContactUtils;
@@ -98,44 +105,34 @@ public class modjam {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
-    public static final DeferredRegister<Enchantment> ENCHANTMENTS = DeferredRegister.create(Registries.ENCHANTMENT, MODID);
     public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, MODID);
 
     public static final DeferredHolder<MobEffect, LightDrainEffect> LIGHT_DRAIN_EFFECT = MOB_EFFECTS.register("light_drain",
         LightDrainEffect::new);
 
-    public static final DeferredHolder<Enchantment, Enchantment> LIGHT_BEAM_ENCHANTMENT = ENCHANTMENTS.register("light_beam",
-        () -> Enchantment.enchantment(Enchantment.definition(
-            HolderSet.direct(), 1, 1, new Enchantment.Cost(1, 0), new Enchantment.Cost(10, 0), 8,
-            EquipmentSlotGroup.MAINHAND, EquipmentSlotGroup.OFFHAND
-        )).build(Identifier.fromNamespaceAndPath(MODID, "light_beam")));
-
-    public static final DeferredHolder<Enchantment, Enchantment> GLOWMARK_ENCHANTMENT = ENCHANTMENTS.register("glowmark",
-        () -> Enchantment.enchantment(Enchantment.definition(
-            HolderSet.direct(), 1, 1, new Enchantment.Cost(1, 0), new Enchantment.Cost(10, 0), 8,
-            EquipmentSlotGroup.MAINHAND
-        )).build(Identifier.fromNamespaceAndPath(MODID, "glowmark")));
-
-    public static final DeferredHolder<Enchantment, Enchantment> LIGHT_DRAIN_ENCHANTMENT = ENCHANTMENTS.register("light_drain",
-        () -> Enchantment.enchantment(Enchantment.definition(
-            HolderSet.direct(), 1, 1, new Enchantment.Cost(1, 0), new Enchantment.Cost(10, 0), 8,
-            EquipmentSlotGroup.MAINHAND
-        )).build(Identifier.fromNamespaceAndPath(MODID, "light_drain")));
-
-    public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", p -> p.mapColor(MapColor.STONE));
-    public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
-
-    public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", p -> p.food(new FoodProperties.Builder()
-            .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
+    public static final ResourceKey<Enchantment> LIGHT_BEAM_ENCHANTMENT = ResourceKey.create(
+        Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(MODID, "light_beam"));
+    public static final ResourceKey<Enchantment> GLOWMARK_ENCHANTMENT = ResourceKey.create(
+        Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(MODID, "glowmark"));
+    public static final ResourceKey<Enchantment> LIGHT_DRAIN_ENCHANTMENT = ResourceKey.create(
+        Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(MODID, "light_drain"));
 
     public static final DeferredItem<Item> BRIGHTEST = ITEMS.registerItem("brightest", BrightestItem::new);
 
+    public static final DeferredItem<Item> SEALED_SINGULARITY = ITEMS.registerItem("sealed_singularity",
+        properties -> new SealedSingularityItem(properties.stacksTo(1)));
+
     public static final DeferredItem<Item> JOURNAL_ITEM = ITEMS.registerItem("discovery_journal", JournalItem::new);
+
+    public static final ResourceKey<EquipmentAsset> MYSTICAL_MONOCLE_ASSET =
+        ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath(MODID, "monocle"));
 
     public static final DeferredItem<Item> MYSTICAL_MONOCLE = ITEMS.registerItem("mystical_monocle",
         properties -> new MysticalMonocle(properties
             .stacksTo(1)
-            .component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD).build())));
+            .component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD)
+                .setAsset(MYSTICAL_MONOCLE_ASSET)
+                .build())));
 
     public static final DeferredHolder<EntityType<?>, EntityType<LightWeaverEntity>> LIGHT_WEAVER_ENTITY =
         ENTITY_TYPES.register("light_weaver", () -> EntityType.Builder.of(LightWeaverEntity::new, MobCategory.MISC)
@@ -172,12 +169,45 @@ public class modjam {
     );
     public static final DeferredItem<BlockItem> LIGHT_URN_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("light_urn", LIGHT_URN_BLOCK);
 
+    public static final DeferredBlock<MysticBrazierBlock> MYSTIC_BRAZIER_BLOCK = BLOCKS.registerBlock(
+        "mystic_brazier",
+        MysticBrazierBlock::new,
+        p -> p.mapColor(MapColor.COLOR_ORANGE).strength(2.0f).sound(SoundType.STONE)
+            .lightLevel(state -> state.getValue(MysticBrazierBlock.LIT) ? 14 : 0)
+    );
+    public static final DeferredItem<BlockItem> MYSTIC_BRAZIER_ITEM = ITEMS.registerSimpleBlockItem("mystic_brazier", MYSTIC_BRAZIER_BLOCK);
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MysticBrazierBlockEntity>> MYSTIC_BRAZIER_BLOCK_ENTITY =
+        BLOCK_ENTITY_TYPES.register(
+            "mystic_brazier",
+            () -> new BlockEntityType<>(MysticBrazierBlockEntity::new, Set.of(MYSTIC_BRAZIER_BLOCK.get()))
+        );
+
+    public static final DeferredBlock<PortableStarBlock> PORTABLE_STAR_BLOCK = BLOCKS.registerBlock(
+        "portable_star",
+        PortableStarBlock::new,
+        p -> p.mapColor(MapColor.COLOR_YELLOW).strength(3.0f).sound(SoundType.AMETHYST).noOcclusion()
+    );
+    public static final DeferredItem<BlockItem> PORTABLE_STAR_ITEM = ITEMS.registerSimpleBlockItem("portable_star", PORTABLE_STAR_BLOCK);
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortableStarBlockEntity>> PORTABLE_STAR_BLOCK_ENTITY =
+        BLOCK_ENTITY_TYPES.register(
+            "portable_star",
+            () -> new BlockEntityType<>(PortableStarBlockEntity::new, Set.of(PORTABLE_STAR_BLOCK.get()))
+        );
+
     public static final DeferredBlock<CrackedQuartzBlock> CRACKED_QUARTZ_BLOCK = BLOCKS.registerBlock(
         "cracked_quartz",
         CrackedQuartzBlock::new,
         p -> p.strength(1.0f).sound(SoundType.STONE)
     );
     public static final DeferredItem<BlockItem> CRACKED_QUARTZ_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("cracked_quartz", CRACKED_QUARTZ_BLOCK);
+
+    public static final DeferredBlock<Block> MOSSY_QUARTZ_BLOCK = BLOCKS.registerSimpleBlock(
+        "mossy_quartz",
+        p -> p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE)
+    );
+    public static final DeferredItem<BlockItem> MOSSY_QUARTZ_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("mossy_quartz", MOSSY_QUARTZ_BLOCK);
 
     public static final Identifier CHEAT_SHEET_ID = Identifier.fromNamespaceAndPath(MODID, "cheat_sheet");
 
@@ -193,23 +223,23 @@ public class modjam {
             .build(ResourceKey.create(Registries.ENTITY_TYPE,
                 Identifier.fromNamespaceAndPath(MODID, "brightest"))));
 
-    public static final DeferredBlock<Block> EXAMPLE_BLENDER_BLOCK = BLOCKS.registerSimpleBlock("example_blender_block", p -> p.mapColor(MapColor.STONE));
-    public static final DeferredItem<BlockItem> EXAMPLE_BLENDER_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_blender_block", EXAMPLE_BLENDER_BLOCK);
-
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.modjam"))
             .withTabsBefore(CreativeModeTabs.COMBAT)
-            .icon(() -> EXAMPLE_ITEM.get().getDefaultInstance())
+            .icon(() -> JOURNAL_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                output.accept(EXAMPLE_ITEM.get());
-                output.accept(EXAMPLE_BLENDER_BLOCK_ITEM.get());
                 output.accept(BRIGHTEST.get());
+                output.accept(SEALED_SINGULARITY.get());
+                output.accept(SEALED_SINGULARITY.get());
                 output.accept(JOURNAL_ITEM.get());
                 output.accept(MYSTICAL_MONOCLE.get());
                 output.accept(LIGHT_WEAVER_ITEM.get());
                 output.accept(SINGULARITY_CRYSTAL_BLOCK_ITEM.get());
                 output.accept(LIGHT_URN_BLOCK_ITEM.get());
                 output.accept(CRACKED_QUARTZ_BLOCK_ITEM.get());
+                output.accept(MOSSY_QUARTZ_BLOCK_ITEM.get());
+                output.accept(MYSTIC_BRAZIER_ITEM.get());
+                output.accept(PORTABLE_STAR_ITEM.get());
             }).build());
 
     public modjam(IEventBus modEventBus, ModContainer modContainer) {
@@ -223,7 +253,6 @@ public class modjam {
         CREATIVE_MODE_TABS.register(modEventBus);
         SOUND_EVENTS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
-        ENCHANTMENTS.register(modEventBus);
         MOB_EFFECTS.register(modEventBus);
         ModDimensions.BIOMES.register(modEventBus);
 
@@ -237,7 +266,6 @@ public class modjam {
         NeoForge.EVENT_BUS.register(SingularityCrystalDrain.getInstance());
         NeoForge.EVENT_BUS.register(LightBeamDestructionManager.getInstance());
 
-        modEventBus.addListener(this::addCreative);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
@@ -324,11 +352,16 @@ public class modjam {
         );
 
         registrar.playToServer(
-            OpenCheatSheetPayload.TYPE,
-            OpenCheatSheetPayload.STREAM_CODEC,
+            SetStarMysticalPayload.TYPE,
+            SetStarMysticalPayload.STREAM_CODEC,
             (payload, context) -> {
-                if (context.player() instanceof ServerPlayer player) {
-                    PlayerUIMenuType.openUI(player, CHEAT_SHEET_ID);
+                if (context.player() instanceof ServerPlayer player
+                    && player.level() instanceof ServerLevel level) {
+                    BlockPos pos = new BlockPos(payload.x(), payload.y(), payload.z());
+                    if (pos.distToCenterSqr(player.position()) > 36.0) return;
+                    if (level.getBlockEntity(pos) instanceof PortableStarBlockEntity star) {
+                        star.setMystical(payload.mystical());
+                    }
                 }
             }
         );
@@ -346,21 +379,9 @@ public class modjam {
         LightEnergyManager.registerSource(Blocks.SOUL_LANTERN, 1.0, 5.0);
         LightEnergyManager.registerSource(Blocks.SOUL_TORCH, 1.0, 5.0);
         LightEnergyManager.registerSource(Blocks.SOUL_CAMPFIRE, 1.0, 5.0);
-
-        if (Config.LOG_DIRT_BLOCK.getAsBoolean()) {
-            LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));
-        }
-
-        LOGGER.info("{}{}", Config.MAGIC_NUMBER_INTRODUCTION.get(), Config.MAGIC_NUMBER.getAsInt());
-
-        Config.ITEM_STRINGS.get().forEach((item) -> LOGGER.info("ITEM >> {}", item));
-    }
-
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-            event.accept(EXAMPLE_BLOCK_ITEM);
-            event.accept(EXAMPLE_BLENDER_BLOCK_ITEM);
-        }
+        LightEnergyManager.registerSource(MYSTIC_BRAZIER_BLOCK.get(), 0.5, 2.0,
+            state -> state.getValue(MysticBrazierBlock.LIT));
+        LightEnergyManager.registerSource(PORTABLE_STAR_BLOCK.get(), 1000.0, 0.0);
     }
 
     @SubscribeEvent

@@ -14,6 +14,7 @@ import dev.vfyjxf.taffy.style.AlignContent;
 import dev.vfyjxf.taffy.style.AlignItems;
 import dev.vfyjxf.taffy.style.FlexDirection;
 import dev.vfyjxf.taffy.style.TaffyPosition;
+import com.lowdragmc.lowdraglib2.gui.ui.event.UIEventListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.component.DataComponents;
@@ -34,6 +35,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class JournalGui {
 
     private static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath("modjam", "textures/gui/journal_gui.png");
+    private static final Identifier PAGE_FLIP_LEFT = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_flip_left_one.png");
+    private static final Identifier PAGE_FLIP_LEFT_HOVER = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_flip_left_two.png");
+    private static final Identifier PAGE_FLIP_RIGHT = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_flip_right_one.png");
+    private static final Identifier PAGE_FLIP_RIGHT_HOVER = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_flip_right_two.png");
+    private static final Identifier PAGE_MARKER = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_marker.png");
     private static final String NOTES_KEY = "modjam_notes";
     private static final float FONT_RATIO = 9f / 480f;
     private static final float NOTE_FONT_RATIO = 4f / 240f;
@@ -139,11 +145,22 @@ public class JournalGui {
         pageLabel.setText(Component.literal(pageText()));
         pageLabel.textStyle(ts -> ts.textColor(0xFF2B1A0D).textShadow(false).fontSize(8));
 
+        var marker = new UIElement()
+                .layout(l -> l
+                        .positionType(TaffyPosition.ABSOLUTE)
+                        .leftPercent(38f)
+                        .bottomPercent(18f)
+                        .heightPercent(3.5f)
+                        .aspectRatio(1f)
+                )
+                .style(s -> s.background(SpriteTexture.of(PAGE_MARKER)));
+        book.addChild(marker);
+
         var indicatorContainer = new UIElement()
                 .layout(l -> l
                         .positionType(TaffyPosition.ABSOLUTE)
                         .leftPercent(40f)
-                        .bottomPercent(4f)
+                        .bottomPercent(17f)
                         .widthPercent(20f)
                         .heightAuto()
                         .alignItems(AlignItems.CENTER)
@@ -161,27 +178,16 @@ public class JournalGui {
                 );
         book.addChild(notesLayer);
 
-        var prevZone = new UIElement()
-                .layout(l -> l
-                        .positionType(TaffyPosition.ABSOLUTE)
-                        .leftPercent(0f)
-                        .bottomPercent(0f)
-                        .widthPercent(20f)
-                        .heightPercent(20f)
-                );
-        prevZone.addEventListener(UIEvents.CLICK, e -> previousPage());
-        book.addChild(prevZone);
+        var prevButton = createFlipButton(PAGE_FLIP_LEFT, PAGE_FLIP_LEFT_HOVER, e -> previousPage());
+        prevButton.layout(l -> l.leftPercent(4.75f));
+        prevButton.layout(b -> b.bottomPercent(19f));
+        book.addChild(prevButton);
 
-        var nextZone = new UIElement()
-                .layout(l -> l
-                        .positionType(TaffyPosition.ABSOLUTE)
-                        .rightPercent(0f)
-                        .bottomPercent(0f)
-                        .widthPercent(20f)
-                        .heightPercent(20f)
-                );
-        nextZone.addEventListener(UIEvents.CLICK, e -> nextPage());
-        book.addChild(nextZone);
+        var nextButton = createFlipButton(PAGE_FLIP_RIGHT, PAGE_FLIP_RIGHT_HOVER, e -> nextPage());
+        nextButton.layout(l -> l.rightPercent(4.5f));
+        nextButton.layout(b -> b.bottomPercent(19f));
+        book.addChild(nextButton);
+
 
         book.addEventListener(UIEvents.MOUSE_MOVE, this::onBookMouseMove, true);
         book.addEventListener(UIEvents.CLICK, this::onBookClick, true);
@@ -217,9 +223,26 @@ public class JournalGui {
         root.addChild(sidebar);
 
         renderNotes();
-        updateActiveZones(prevZone, nextZone);
+        updateActiveZones(prevButton, nextButton);
 
         return ModularUI.of(UI.of(root));
+    }
+
+    private static UIElement createFlipButton(Identifier base, Identifier hover, UIEventListener onClick) {
+        var button = new UIElement()
+                .layout(l -> l
+                        .positionType(TaffyPosition.ABSOLUTE)
+                        .bottomPercent(18f)
+                        .widthPercent(10f)
+                        .aspectRatio(1f)
+                )
+                .style(s -> s.background(SpriteTexture.of(base)));
+        button.addEventListener(UIEvents.MOUSE_ENTER,
+                e -> button.style(s -> s.background(SpriteTexture.of(hover))));
+        button.addEventListener(UIEvents.MOUSE_LEAVE,
+                e -> button.style(s -> s.background(SpriteTexture.of(base))));
+        button.addEventListener(UIEvents.CLICK, onClick);
+        return button;
     }
 
     private void previousPage() {

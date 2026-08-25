@@ -23,6 +23,13 @@ public class SoulLightBlockEntity extends BlockEntity {
         return charges;
     }
 
+    public boolean addCharge() {
+        if (charges >= MAX_CHARGES || getLevel() == null) return false;
+        charges++;
+        setChanged();
+        return true;
+    }
+
     public boolean useLight() {
         if (charges <= 0 || getLevel() == null) return false;
         charges--;

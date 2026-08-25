@@ -5,12 +5,14 @@ import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
-import com.lowdragmc.lowdraglib2.gui.texture.SDFRectTexture;
+import com.lowdragmc.lowdraglib2.gui.texture.ColorRectTexture;
+import com.lowdragmc.lowdraglib2.gui.texture.SpriteTexture;
 import dev.vfyjxf.taffy.style.AlignContent;
 import dev.vfyjxf.taffy.style.AlignItems;
 import dev.vfyjxf.taffy.style.FlexDirection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.multyfora.modjam.lightweaver.LightWeaverShapes;
 import net.multyfora.modjam.lightweaver.WeaverPaper;
@@ -18,11 +20,11 @@ import net.multyfora.modjam.network.SavePaperPatternPayload;
 
 public final class PaperPatternGui {
 
-    private static final int OUTER_GOLD = 0xFF6B4A20;
-    private static final int INNER_STONE = 0xFF3A2410;
-    private static final int DARK_GOLD = 0xFFB8860B;
-    private static final int CELL_EMPTY = 0xFF2A1A0E;
-    private static final int CELL_FILLED = 0xFFD4A840;
+    private static final Identifier PAPER_TEXTURE =
+        Identifier.fromNamespaceAndPath("modjam", "textures/gui/paper_page.png");
+
+    private static final int CELL_EMPTY = 0x257B5327;
+    private static final int CELL_FILLED = 0xFF7B5327;
 
     private final int hand;
     private final boolean[] cells;
@@ -46,10 +48,9 @@ public final class PaperPatternGui {
         int[] heldButton = {-1};
 
         UIElement grid = new UIElement()
-                .layout(l -> l.flexDirection(FlexDirection.COLUMN).gapAll(1).paddingAll(12))
-                .style(s -> s.background(SDFRectTexture.of(INNER_STONE).setRadius(6f).setBorderColor(OUTER_GOLD)));
+                .layout(l -> l.flexDirection(FlexDirection.COLUMN));
         for (int row = 0; row < LightWeaverShapes.GRID_SIZE; row++) {
-            UIElement rowElement = new UIElement().layout(l -> l.flexDirection(FlexDirection.ROW).gapAll(1));
+            UIElement rowElement = new UIElement().layout(l -> l.flexDirection(FlexDirection.ROW));
             for (int col = 0; col < LightWeaverShapes.GRID_SIZE; col++) {
                 final int r = row;
                 final int c = col;
@@ -72,8 +73,9 @@ public final class PaperPatternGui {
         }
 
         UIElement panel = new UIElement()
-                .layout(l -> l.flexDirection(FlexDirection.COLUMN).gapAll(10).paddingAll(14).alignItems(AlignItems.CENTER))
-                .style(s -> s.background(SDFRectTexture.of(0xE2170803).setRadius(10f).setBorderColor(0x55D4A840)))
+                .layout(l -> l.width(250).height(310).flexDirection(FlexDirection.COLUMN)
+                        .justifyContent(AlignContent.CENTER).alignItems(AlignItems.CENTER))
+                .style(s -> s.background(SpriteTexture.of(PAPER_TEXTURE)))
                 .addChild(grid);
 
         UIElement root = new UIElement()
@@ -93,10 +95,8 @@ public final class PaperPatternGui {
         }
     }
 
-    private static SDFRectTexture cellTexture(boolean[] cells, int row, int col) {
-        return SDFRectTexture.of(cells[row * LightWeaverShapes.GRID_SIZE + col] ? CELL_FILLED : CELL_EMPTY)
-                .setRadius(2f)
-                .setBorderColor(DARK_GOLD);
+    private static ColorRectTexture cellTexture(boolean[] cells, int row, int col) {
+        return new ColorRectTexture(cells[row * LightWeaverShapes.GRID_SIZE + col] ? CELL_FILLED : CELL_EMPTY);
     }
 
     private static void setCell(UIElement cell, boolean[] cells, int row, int col, boolean filled) {
