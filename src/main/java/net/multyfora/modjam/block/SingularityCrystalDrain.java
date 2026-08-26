@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.multyfora.modjam.light.LightEnergyManager;
 import net.multyfora.modjam.modjam;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -21,7 +22,7 @@ public class SingularityCrystalDrain {
     private static final int EXPOSURE_INTERVAL = 20;
     private static final int EXPOSURE_TIME = 6000;
     private static final int LIGHT_RADIUS = 7;
-    private static final int SKY_OCCLUDER = 15;
+    private static final int SKY_EXPOSURE_LEVEL = 8;
 
     private final java.util.Map<net.minecraft.resources.ResourceKey<Level>, java.util.Map<BlockPos, Integer>> exposure = new java.util.HashMap<>();
 
@@ -42,7 +43,35 @@ public class SingularityCrystalDrain {
         for (ServerLevel level : server.getAllLevels()) {
             List<BlockPos> crystals = CrystalTracker.crystals(level.dimension());
             for (BlockPos pos : crystals) {
-                LightEnergyManager.drainCrystalsAround(level, pos);
+                tryAbsorbCharge(level, pos);
+            }
+        }
+    }
+
+    private static void tryAbsorbCharge(ServerLevel level, BlockPos pos) {
+        int range = LightEnergyManager.RANGE;
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -range; dy <= range; dy++) {
+                for (int dz = -range; dz <= range; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+                    BlockPos neighbor = pos.offset(dx, dy, dz);
+                    boolean took = false;
+                    if (level.getBlockEntity(neighbor) instanceof AmethystCrystalBlockEntity crystal
+                        && crystal.getCharges() > 0) {
+                        took = crystal.useLight();
+                    } else if (level.getBlockEntity(neighbor) instanceof SoulLightBlockEntity soul
+                        && soul.getCharges() > 0) {
+                        took = soul.useLight();
+                    }
+                    if (!took) continue;
+
+                    modjam.LOGGER.info("[SCDrain] crystal {} absorbed a charge from {} and reverted", pos, neighbor);
+                    level.setBlock(pos, amethystClusterState(), 3);
+                    if (level.getBlockEntity(pos) instanceof AmethystCrystalBlockEntity reborn) {
+                        reborn.setCharges(1);
+                    }
+                    return;
+                }
             }
         }
     }
@@ -56,16 +85,21 @@ public class SingularityCrystalDrain {
             for (BlockPos pos : crystals) {
                 if (!level.getBlockState(pos).is(modjam.SINGULARITY_CRYSTAL_BLOCK.get())) continue;
                 BlockPos immutable = pos.immutable();
-                if (isExposedToLight(level, pos)) {
+                boolean exposed = isExposedToLight(level, pos);
+                if (exposed) {
                     int accumulated = timers.getOrDefault(immutable, 0) + EXPOSURE_INTERVAL;
                     if (accumulated >= EXPOSURE_TIME) {
+                        modjam.LOGGER.info("[SCDrain] reverting singularity crystal at {} after {} ticks of exposure", immutable, accumulated);
                         level.setBlock(immutable, amethystClusterState(), 3);
                         timers.remove(immutable);
                     } else {
                         timers.put(immutable, accumulated);
+                        modjam.LOGGER.debug("[SCDrain] crystal {} exposed, {}/{} ticks", immutable, accumulated, EXPOSURE_TIME);
                     }
                 } else {
-                    timers.remove(immutable);
+                    if (timers.remove(immutable) != null) {
+                        modjam.LOGGER.info("[SCDrain] crystal {} lost exposure, timer reset", immutable);
+                    }
                 }
             }
 
@@ -79,24 +113,11 @@ public class SingularityCrystalDrain {
     }
 
     private static boolean isExposedToLight(ServerLevel level, BlockPos pos) {
-        if (level.dimensionType().hasSkyLight() && isSunUp(level) && seesOpenSky(level, pos)) {
+        if (level.isBrightOutside()
+            && level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY() <= pos.getY()) {
             return true;
         }
         return hasNearbyLightSource(level, pos);
-    }
-
-    private static boolean isSunUp(Level level) {
-        return level.getOverworldClockTime() % 24000L < 12000L;
-    }
-
-    private static boolean seesOpenSky(ServerLevel level, BlockPos pos) {
-        for (int y = pos.getY() + 1; y < level.getMaxY(); y++) {
-            BlockPos above = pos.atY(y);
-            if (level.getBlockState(above).getLightDampening() >= SKY_OCCLUDER) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static boolean hasNearbyLightSource(ServerLevel level, BlockPos pos) {

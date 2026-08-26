@@ -12,6 +12,10 @@
   "block.modjam.mystic_brazier": "Mystic Brazier",
   "block.modjam.portable_star": "Portable Star",
   "tooltip.modjam.sealed_singularity.charges": "Charges: %s / %s",
+  "tooltip.modjam.sealed_singularity.mode": "State: %s",
+  "tooltip.modjam.sealed_singularity.mode.sealed": "Sealed",
+  "tooltip.modjam.sealed_singularity.mode.uncapped": "Unsealed (collecting)",
+  "tooltip.modjam.sealed_singularity.mode.alt": "Unsealed (releasing)",
 
   "enchantment.modjam.light_beam": "Light Beam",
   "enchantment.modjam.glowmark": "Glowmark",

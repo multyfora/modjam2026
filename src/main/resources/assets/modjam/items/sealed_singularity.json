@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "modjam:item/sealed_singularity"
+    "type": "minecraft:special",
+    "base": "modjam:item/sealed_singularity",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
   }
 }

@@ -26,8 +26,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.equipment.EquipmentAsset;
-import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.effect.MobEffect;
 import net.multyfora.modjam.effect.LightDrainEffect;
@@ -124,14 +122,10 @@ public class modjam {
 
     public static final DeferredItem<Item> JOURNAL_ITEM = ITEMS.registerItem("discovery_journal", JournalItem::new);
 
-    public static final ResourceKey<EquipmentAsset> MYSTICAL_MONOCLE_ASSET =
-        ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath(MODID, "monocle"));
-
     public static final DeferredItem<Item> MYSTICAL_MONOCLE = ITEMS.registerItem("mystical_monocle",
         properties -> new MysticalMonocle(properties
             .stacksTo(1)
             .component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD)
-                .setAsset(MYSTICAL_MONOCLE_ASSET)
                 .build())));
 
     public static final DeferredHolder<EntityType<?>, EntityType<LightWeaverEntity>> LIGHT_WEAVER_ENTITY =
