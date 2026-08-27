@@ -14,6 +14,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.multyfora.modjam.modjam;
 import net.multyfora.modjam.dialogue.DialogueEventManager;
 import net.multyfora.modjam.cutscene.CutsceneManager;
+import net.multyfora.modjam.journal.JournalEntryManager;
 import net.multyfora.modjam.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.modjam.world.dimension.ModDimensions;
 
@@ -152,6 +153,76 @@ public class ModJamCommands {
                     PlayerUIMenuType.openUI(player, modjam.CHEAT_SHEET_ID);
                     return 1;
                 })
+            )
+            .then(Commands.literal("givewallwriting")
+                .then(Commands.argument("text", StringArgumentType.greedyString())
+                    .requires(source -> source.getEntity() instanceof ServerPlayer)
+                    .executes(context -> {
+                        var player = (ServerPlayer) context.getSource().getEntity();
+                        String raw = StringArgumentType.getString(context, "text");
+                        String text = raw.length() > 300 ? raw.substring(0, 300) : raw;
+                        var stack = net.multyfora.modjam.item.WallWritingItem.create(text);
+                        if (!player.getInventory().add(stack)) {
+                            player.drop(stack, false);
+                        }
+                        String msg = text;
+                        context.getSource().sendSuccess(() -> Component.translatable("command.modjam.givewallwriting.success", msg), true);
+                        return 1;
+                    })
+                )
+            )
+            .then(Commands.literal("journal")
+                .then(Commands.literal("reset")
+                    .requires(source -> source.getEntity() instanceof ServerPlayer)
+                    .executes(context -> {
+                        var player = (ServerPlayer) context.getSource().getEntity();
+                        JournalEntryManager.resetPlayerProgress(player);
+                        context.getSource().sendSuccess(() -> Component.translatable("command.modjam.journal.reset.success"), true);
+                        return 1;
+                    })
+                )
+                .then(Commands.literal("unlock")
+                    .then(Commands.argument("entry", StringArgumentType.greedyString())
+                        .suggests((c, b) -> {
+                            for (Identifier id : JournalEntryManager.registeredEntries()) b.suggest(id.toString());
+                            return b.buildFuture();
+                        })
+                        .executes(context -> {
+                            var player = (ServerPlayer) context.getSource().getEntity();
+                            String name = StringArgumentType.getString(context, "entry");
+                            Identifier id;
+                            try { id = Identifier.parse(name); } catch (Exception e) {
+                                context.getSource().sendFailure(Component.translatable("command.modjam.journal.unlock.unknown", name));
+                                return 0;
+                            }
+                            if (JournalEntryManager.getDefinition(id) == null) {
+                                context.getSource().sendFailure(Component.translatable("command.modjam.journal.unlock.unknown", name));
+                                return 0;
+                            }
+                            if (!JournalEntryManager.tryDiscover(player, id)) {
+                                context.getSource().sendFailure(Component.translatable("command.modjam.journal.unlock.already", name));
+                                return 0;
+                            }
+                            JournalEntryManager.syncToPlayer(player);
+                            context.getSource().sendSuccess(() -> Component.translatable("command.modjam.journal.unlock.success", name), true);
+                            return 1;
+                        })
+                    )
+                )
+                .then(Commands.literal("unlockall")
+                    .requires(source -> source.getEntity() instanceof ServerPlayer)
+                    .executes(context -> {
+                        var player = (ServerPlayer) context.getSource().getEntity();
+                        int count = 0;
+                        for (Identifier id : JournalEntryManager.registeredEntries()) {
+                            if (JournalEntryManager.tryDiscover(player, id)) count++;
+                        }
+                        if (count > 0) JournalEntryManager.syncToPlayer(player);
+                        int finalCount = count;
+                        context.getSource().sendSuccess(() -> Component.literal("Unlocked " + finalCount + " entries"), true);
+                        return count;
+                    })
+                )
             )
         );
     }

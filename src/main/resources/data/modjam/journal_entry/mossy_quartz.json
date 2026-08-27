@@ -1,0 +1,12 @@
+{
+  "image": "modjam:textures/gui/journal/mossy_quartz.png",
+  "description": "journal.modjam.mossy_quartz",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "modjam:mossy_quartz",
+      "radius": 8
+    }
+  ]
+}

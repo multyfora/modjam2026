@@ -1,0 +1,20 @@
+{
+  "image": "modjam:textures/gui/journal/brightest.png",
+  "description": "journal.modjam.brightest",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "minecraft:beacon",
+      "radius": 16
+    },
+    {
+      "type": "modjam:inventory",
+      "items": [
+        {
+          "items": "modjam:brightest"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "image": "modjam:textures/gui/journal/amethyst.png",
+  "description": "journal.modjam.amethyst",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "minecraft:amethyst_block",
+      "radius": 8
+    },
+    {
+      "type": "modjam:inventory",
+      "items": [
+        {
+          "items": "minecraft:amethyst"
+        }
+      ]
+    }
+  ]
+}

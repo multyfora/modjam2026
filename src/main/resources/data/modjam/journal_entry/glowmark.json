@@ -1,0 +1,15 @@
+{
+  "image": "modjam:textures/gui/journal/glowmark.png",
+  "description": "journal.modjam.glowmark",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        {
+          "items": "minecraft:enchanted_book"
+        }
+      ]
+    }
+  ]
+}

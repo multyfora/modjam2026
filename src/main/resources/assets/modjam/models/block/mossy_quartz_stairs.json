@@ -1,0 +1,8 @@
+{
+  "parent": "block/stairs",
+  "textures": {
+    "bottom": "modjam:block/mossy_quartz_bottom",
+    "top": "modjam:block/mossy_quartz_top",
+    "side": "modjam:block/mossy_quartz_side"
+  }
+}

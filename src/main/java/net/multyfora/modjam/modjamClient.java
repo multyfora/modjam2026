@@ -31,9 +31,13 @@ import net.multyfora.modjam.client.ShotBeamRenderer;
 import net.multyfora.modjam.client.model.MonocleWornLayer;
 import net.multyfora.modjam.client.renderer.BrightestEntityRenderer;
 import net.multyfora.modjam.client.renderer.LightWeaverRenderer;
+import net.multyfora.modjam.client.renderer.WallWritingRenderer;
+import net.multyfora.modjam.network.WallWritingReadPayload;
+import net.multyfora.modjam.client.ClientJournalState;
 import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
+import net.multyfora.modjam.network.JournalSyncPayload;
 import net.multyfora.modjam.network.LightBeamPayload;
 import net.multyfora.modjam.network.OpenBrightestMenuPayload;
 import net.multyfora.modjam.network.StartCutscenePayload;
@@ -73,6 +77,7 @@ public class modjamClient {
     private static void onRegisterEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(modjam.BRIGHTEST_ENTITY.get(), BrightestEntityRenderer::new);
         event.registerEntityRenderer(modjam.LIGHT_WEAVER_ENTITY.get(), LightWeaverRenderer::new);
+        event.registerEntityRenderer(modjam.WALL_WRITING_ENTITY.get(), WallWritingRenderer::new);
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
@@ -112,6 +117,10 @@ public class modjamClient {
                 ShotBeamRenderer.spawnShot(muzzle, start.add(dir.scale(payload.range())),
                     ShotBeamRenderer.BEAM_WIDTH, ShotBeamRenderer.BEAM_COLOR);
             });
+        event.register(JournalSyncPayload.TYPE,
+            (payload, context) -> ClientJournalState.getInstance().handle(payload));
+        event.register(WallWritingReadPayload.TYPE,
+            (payload, context) -> DialogueSystem.getInstance().playMarkup(java.util.List.of(payload.plain()), null));
     }
 
     @SubscribeEvent

@@ -1,0 +1,20 @@
+{
+  "image": "modjam:textures/gui/journal/singularity_crystal.png",
+  "description": "journal.modjam.singularity_crystal",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "modjam:singularity_crystal",
+      "radius": 8
+    },
+    {
+      "type": "modjam:inventory",
+      "items": [
+        {
+          "items": "modjam:singularity_crystal"
+        }
+      ]
+    }
+  ]
+}

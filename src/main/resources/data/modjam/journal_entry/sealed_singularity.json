@@ -1,0 +1,15 @@
+{
+  "image": "modjam:textures/gui/journal/sealed_singularity.png",
+  "description": "journal.modjam.sealed_singularity",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:inventory",
+      "items": [
+        {
+          "items": "modjam:sealed_singularity"
+        }
+      ]
+    }
+  ]
+}
