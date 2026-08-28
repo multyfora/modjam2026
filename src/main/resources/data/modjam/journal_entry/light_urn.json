@@ -1,0 +1,20 @@
+{
+  "image": "modjam:textures/gui/journal/light_urn.png",
+  "description": "journal.modjam.light_urn",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "modjam:light_urn",
+      "radius": 8
+    },
+    {
+      "type": "modjam:inventory",
+      "items": [
+        {
+          "items": "modjam:light_urn"
+        }
+      ]
+    }
+  ]
+}

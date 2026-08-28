@@ -1,0 +1,20 @@
+{
+  "image": "modjam:textures/gui/journal/mystic_brazier.png",
+  "description": "journal.modjam.mystic_brazier",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "modjam:mystic_brazier",
+      "radius": 8
+    },
+    {
+      "type": "modjam:inventory",
+      "items": [
+        {
+          "items": "modjam:mystic_brazier"
+        }
+      ]
+    }
+  ]
+}

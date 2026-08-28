@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": "modjam:mossy_quartz"
+  },
+  "result": {
+    "id": "modjam:mossy_quartz_stairs",
+    "count": 4
+  }
+}

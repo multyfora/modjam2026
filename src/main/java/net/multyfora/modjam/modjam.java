@@ -30,7 +30,9 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.effect.MobEffect;
 import net.multyfora.modjam.effect.LightDrainEffect;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
@@ -48,6 +50,8 @@ import net.multyfora.modjam.item.LightBeamHandler;
 import net.multyfora.modjam.item.LightWeaverItem;
 import net.multyfora.modjam.item.MysticalMonocle;
 import net.multyfora.modjam.item.SealedSingularityItem;
+import net.multyfora.modjam.item.WallWritingItem;
+import net.multyfora.modjam.world.entity.WallWritingEntity;
 import net.multyfora.modjam.light.LightEnergyManager;
 import net.multyfora.modjam.lightweaver.CheatSheetUI;
 import net.multyfora.modjam.lightweaver.LightBeamDestructionManager;
@@ -74,6 +78,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.multyfora.modjam.dialogue.DialogueEventManager;
 import net.multyfora.modjam.cutscene.CutsceneManager;
+import net.multyfora.modjam.journal.JournalEntryManager;
 import net.multyfora.modjam.network.AcceptDealPayload;
 import net.multyfora.modjam.network.CutsceneCompletePayload;
 import net.multyfora.modjam.network.DialogueCompletePayload;
@@ -81,11 +86,14 @@ import net.multyfora.modjam.network.DialogueEventStartPayload;
 import net.multyfora.modjam.network.FirstContactEnterPayload;
 import net.multyfora.modjam.network.FirstContactLeavePayload;
 import net.multyfora.modjam.network.FirstContactTogglePayload;
+import net.multyfora.modjam.network.JournalOpenPayload;
+import net.multyfora.modjam.network.JournalSyncPayload;
 import net.multyfora.modjam.network.LightBeamPayload;
 import net.multyfora.modjam.network.OpenBrightestMenuPayload;
 import net.multyfora.modjam.network.SavePaperPatternPayload;
 import net.multyfora.modjam.network.SetStarMysticalPayload;
 import net.multyfora.modjam.network.StartCutscenePayload;
+import net.multyfora.modjam.network.WallWritingReadPayload;
 import net.multyfora.modjam.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.modjam.world.dimension.FirstContactUtils;
 import net.multyfora.modjam.world.dimension.ModDimensions;
@@ -203,6 +211,20 @@ public class modjam {
     );
     public static final DeferredItem<BlockItem> MOSSY_QUARTZ_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("mossy_quartz", MOSSY_QUARTZ_BLOCK);
 
+    public static final DeferredBlock<StairBlock> MOSSY_QUARTZ_STAIRS = BLOCKS.registerBlock(
+        "mossy_quartz_stairs",
+        p -> new StairBlock(MOSSY_QUARTZ_BLOCK.get().defaultBlockState(),
+            p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE))
+    );
+    public static final DeferredItem<BlockItem> MOSSY_QUARTZ_STAIRS_ITEM = ITEMS.registerSimpleBlockItem("mossy_quartz_stairs", MOSSY_QUARTZ_STAIRS);
+
+    public static final DeferredBlock<SlabBlock> MOSSY_QUARTZ_SLAB = BLOCKS.registerBlock(
+        "mossy_quartz_slab",
+        SlabBlock::new,
+        p -> p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE)
+    );
+    public static final DeferredItem<BlockItem> MOSSY_QUARTZ_SLAB_ITEM = ITEMS.registerSimpleBlockItem("mossy_quartz_slab", MOSSY_QUARTZ_SLAB);
+
     public static final Identifier CHEAT_SHEET_ID = Identifier.fromNamespaceAndPath(MODID, "cheat_sheet");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> FIRST_CONTACT_MUSIC = SOUND_EVENTS.register(
@@ -216,6 +238,16 @@ public class modjam {
             .setUpdateInterval(20)
             .build(ResourceKey.create(Registries.ENTITY_TYPE,
                 Identifier.fromNamespaceAndPath(MODID, "brightest"))));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<WallWritingEntity>> WALL_WRITING_ENTITY =
+        ENTITY_TYPES.register("wall_writing", () -> EntityType.Builder.of(WallWritingEntity::new, MobCategory.MISC)
+            .sized(0.7f, 0.7f)
+            .setUpdateInterval(10)
+            .build(ResourceKey.create(Registries.ENTITY_TYPE,
+                Identifier.fromNamespaceAndPath(MODID, "wall_writing"))));
+
+    public static final DeferredItem<Item> WALL_WRITING_ITEM = ITEMS.registerItem("wall_writing",
+        properties -> new WallWritingItem(properties.stacksTo(1)));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.modjam"))
@@ -232,6 +264,8 @@ public class modjam {
                 output.accept(LIGHT_URN_BLOCK_ITEM.get());
                 output.accept(CRACKED_QUARTZ_BLOCK_ITEM.get());
                 output.accept(MOSSY_QUARTZ_BLOCK_ITEM.get());
+                output.accept(MOSSY_QUARTZ_STAIRS_ITEM.get());
+                output.accept(MOSSY_QUARTZ_SLAB_ITEM.get());
                 output.accept(MYSTIC_BRAZIER_ITEM.get());
                 output.accept(PORTABLE_STAR_ITEM.get());
             }).build());
@@ -257,6 +291,8 @@ public class modjam {
         NeoForge.EVENT_BUS.addListener(DialogueEventManager::onAddReloadListeners);
         NeoForge.EVENT_BUS.register(CutsceneManager.getInstance());
         NeoForge.EVENT_BUS.addListener(CutsceneManager::onAddReloadListeners);
+        NeoForge.EVENT_BUS.register(JournalEntryManager.getInstance());
+        NeoForge.EVENT_BUS.addListener(JournalEntryManager::onAddReloadListeners);
         NeoForge.EVENT_BUS.register(SingularityCrystalDrain.getInstance());
         NeoForge.EVENT_BUS.register(LightBeamDestructionManager.getInstance());
 
@@ -295,6 +331,26 @@ public class modjam {
         registrar.playToClient(
             StartCutscenePayload.TYPE,
             StartCutscenePayload.STREAM_CODEC
+        );
+
+        registrar.playToClient(
+            JournalSyncPayload.TYPE,
+            JournalSyncPayload.STREAM_CODEC
+        );
+
+        registrar.playToClient(
+            WallWritingReadPayload.TYPE,
+            WallWritingReadPayload.STREAM_CODEC
+        );
+
+        registrar.playToServer(
+            JournalOpenPayload.TYPE,
+            JournalOpenPayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.player() instanceof ServerPlayer player) {
+                    JournalEntryManager.syncToPlayer(player);
+                }
+            }
         );
 
         registrar.playToServer(
@@ -391,6 +447,7 @@ public class modjam {
             } else if (player.level().dimension() == ModDimensions.FIRST_CONTACT_LEVEL_KEY) {
                 FirstContactUtils.ensureBrightest((ServerLevel) player.level(), player);
             }
+            JournalEntryManager.syncToPlayer(player);
         }
     }
 }

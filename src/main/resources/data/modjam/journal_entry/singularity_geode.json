@@ -1,0 +1,12 @@
+{
+  "image": "modjam:textures/gui/journal/singularity_geode.png",
+  "description": "journal.modjam.singularity_geode",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "modjam:nearby_block",
+      "block": "minecraft:smooth_basalt",
+      "radius": 6
+    }
+  ]
+}

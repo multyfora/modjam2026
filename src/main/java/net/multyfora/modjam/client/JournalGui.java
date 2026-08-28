@@ -9,12 +9,14 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvent;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
+import com.lowdragmc.lowdraglib2.gui.texture.ColorRectTexture;
 import com.lowdragmc.lowdraglib2.gui.texture.SpriteTexture;
 import dev.vfyjxf.taffy.style.AlignContent;
 import dev.vfyjxf.taffy.style.AlignItems;
 import dev.vfyjxf.taffy.style.FlexDirection;
 import dev.vfyjxf.taffy.style.TaffyPosition;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEventListener;
+import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.component.DataComponents;
@@ -25,6 +27,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.multyfora.modjam.network.JournalOpenPayload;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -39,7 +42,6 @@ public class JournalGui {
     private static final Identifier PAGE_FLIP_LEFT_HOVER = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_flip_left_two.png");
     private static final Identifier PAGE_FLIP_RIGHT = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_flip_right_one.png");
     private static final Identifier PAGE_FLIP_RIGHT_HOVER = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_flip_right_two.png");
-    private static final Identifier PAGE_MARKER = Identifier.fromNamespaceAndPath("modjam", "textures/gui/page_marker.png");
     private static final String NOTES_KEY = "modjam_notes";
     private static final float FONT_RATIO = 9f / 480f;
     private static final float NOTE_FONT_RATIO = 4f / 240f;
@@ -50,11 +52,14 @@ public class JournalGui {
     private int currentPage;
 
     private Label textLabel;
-    private Label pageLabel;
     private UIElement imageBox;
+    private UIElement imagePanel;
+    private Label titleLabel;
     private UIElement book;
     private UIElement notesLayer;
     private UIElement editorPanel;
+    private UIElement prevButton;
+    private UIElement nextButton;
     private StickyNoteEditor editor;
     private final List<Label> noteLabels = new ArrayList<>();
 
@@ -63,16 +68,16 @@ public class JournalGui {
     private UIElement ghost;
 
     public static void open(ItemStack stack) {
+        var connection = Minecraft.getInstance().getConnection();
+        if (connection != null) {
+            connection.send(new JournalOpenPayload().toVanillaServerbound());
+        }
         Minecraft.getInstance().setScreenAndShow(new ModularUIScreen(new JournalGui(stack).createUI(), Component.empty()));
     }
 
     private JournalGui(ItemStack journalStack) {
         this.journalStack = journalStack;
-        this.pages = List.of(
-                new Page(null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."),
-                new Page(null, "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."),
-                new Page(null, "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.")
-        );
+        this.pages = buildPages();
         this.pageNotes = new ArrayList<>();
         for (int i = 0; i < pages.size(); i++) {
             pageNotes.add(new ArrayList<>());
@@ -81,7 +86,48 @@ public class JournalGui {
         loadNotes();
     }
 
-    private record Page(@Nullable Identifier image, String text) {}
+    private static List<Page> buildPages() {
+        var entries = ClientJournalState.getInstance().getEntries();
+        if (entries.isEmpty()) {
+            return List.of(new Page(null, Component.translatable("journal.modjam.empty"), Component.empty()));
+        }
+        List<Page> list = new ArrayList<>();
+        for (var e : entries) {
+            Identifier img = null;
+            if (e.image() != null) {
+                try {
+                    img = Identifier.parse(e.image());
+                } catch (Exception ignored) {}
+            }
+            Component desc = e.descriptionIsKey() ? Component.translatable(e.description()) : Component.literal(e.description());
+            Component title;
+            if (e.title() != null) {
+                title = e.titleIsKey() ? Component.translatable(e.title()) : Component.literal(e.title());
+            } else {
+                title = Component.literal(prettyId(e.id()));
+            }
+            list.add(new Page(img, desc, title));
+        }
+        return List.copyOf(list);
+    }
+
+    private static String prettyId(String id) {
+        String path = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
+        StringBuilder sb = new StringBuilder();
+        boolean cap = true;
+        for (char c : path.toCharArray()) {
+            if (c == '_' || c == '-') {
+                sb.append(' ');
+                cap = true;
+            } else {
+                sb.append(cap ? Character.toUpperCase(c) : c);
+                cap = false;
+            }
+        }
+        return sb.toString();
+    }
+
+    private record Page(@Nullable Identifier image, Component text, Component title) {}
 
     private ModularUI createUI() {
         var root = new UIElement()
@@ -109,18 +155,44 @@ public class JournalGui {
                 .background(SpriteTexture.of(BACKGROUND))
         );
 
-        imageBox = new UIElement()
+        imagePanel = new UIElement()
                 .layout(l -> l
                         .positionType(TaffyPosition.ABSOLUTE)
-                        .leftPercent(8.6f)
-                        .topPercent(21.5f)
-                        .widthPercent(38.3f)
-                        .heightPercent(60.5f)
+                        .leftPercent(3f)
+                        .topPercent(15f)
+                        .widthPercent(47f)
+                        .bottomPercent(15f)
+                        .flexDirection(FlexDirection.COLUMN)
+                        .alignItems(AlignItems.CENTER)
+                        .justifyContent(AlignContent.CENTER)
+                        .gapAll(8f)
                 );
-        book.addChild(imageBox);
+        book.addChild(imagePanel);
+
+        titleLabel = new Label();
+        titleLabel.textStyle(ts -> ts
+                .textColor(0xFF2B1A0D)
+                .textShadow(false)
+                .fontSize(16)
+        );
+        titleLabel.layout(l -> l
+                .positionType(TaffyPosition.ABSOLUTE)
+                .leftPercent(7f)
+                .topPercent(21.5f)
+                .widthAuto()
+                .heightAuto()
+        );
+        book.addChild(titleLabel);
+
+        imageBox = new UIElement()
+                .layout(l -> l
+                        .widthPercent(72f)
+                        .alignSelf(AlignItems.CENTER)
+                );
+        imagePanel.addChild(imageBox);
 
         textLabel = new Label();
-        textLabel.setText(Component.literal(pages.get(0).text()));
+        textLabel.setText(pages.get(0).text());
         textLabel.textStyle(ts -> ts
                 .textColor(0xFF2B1A0D)
                 .textShadow(false)
@@ -141,33 +213,6 @@ public class JournalGui {
         textArea.addChild(textLabel);
         book.addChild(textArea);
 
-        pageLabel = new Label();
-        pageLabel.setText(Component.literal(pageText()));
-        pageLabel.textStyle(ts -> ts.textColor(0xFF2B1A0D).textShadow(false).fontSize(8));
-
-        var marker = new UIElement()
-                .layout(l -> l
-                        .positionType(TaffyPosition.ABSOLUTE)
-                        .leftPercent(38f)
-                        .bottomPercent(18f)
-                        .heightPercent(3.5f)
-                        .aspectRatio(1f)
-                )
-                .style(s -> s.background(SpriteTexture.of(PAGE_MARKER)));
-        book.addChild(marker);
-
-        var indicatorContainer = new UIElement()
-                .layout(l -> l
-                        .positionType(TaffyPosition.ABSOLUTE)
-                        .leftPercent(40f)
-                        .bottomPercent(17f)
-                        .widthPercent(20f)
-                        .heightAuto()
-                        .alignItems(AlignItems.CENTER)
-                );
-        indicatorContainer.addChild(pageLabel);
-        book.addChild(indicatorContainer);
-
         notesLayer = new UIElement()
                 .layout(l -> l
                         .positionType(TaffyPosition.ABSOLUTE)
@@ -178,12 +223,12 @@ public class JournalGui {
                 );
         book.addChild(notesLayer);
 
-        var prevButton = createFlipButton(PAGE_FLIP_LEFT, PAGE_FLIP_LEFT_HOVER, e -> previousPage());
+        prevButton = createFlipButton(PAGE_FLIP_LEFT, PAGE_FLIP_LEFT_HOVER, e -> previousPage());
         prevButton.layout(l -> l.leftPercent(4.75f));
         prevButton.layout(b -> b.bottomPercent(19f));
         book.addChild(prevButton);
 
-        var nextButton = createFlipButton(PAGE_FLIP_RIGHT, PAGE_FLIP_RIGHT_HOVER, e -> nextPage());
+        nextButton = createFlipButton(PAGE_FLIP_RIGHT, PAGE_FLIP_RIGHT_HOVER, e -> nextPage());
         nextButton.layout(l -> l.rightPercent(4.5f));
         nextButton.layout(b -> b.bottomPercent(19f));
         book.addChild(nextButton);
@@ -222,11 +267,11 @@ public class JournalGui {
         sidebar.addChild(tab);
         root.addChild(sidebar);
 
-        renderNotes();
-        updateActiveZones(prevButton, nextButton);
+        updateContent();
 
         return ModularUI.of(UI.of(root));
     }
+
 
     private static UIElement createFlipButton(Identifier base, Identifier hover, UIEventListener onClick) {
         var button = new UIElement()
@@ -448,6 +493,23 @@ public class JournalGui {
     }
 
 
+
+    private static float getImageAspectRatio(Identifier location) {
+        try {
+            var resource = Minecraft.getInstance().getResourceManager().getResource(location);
+            if (resource.isEmpty()) return -1f;
+            try (var stream = resource.get().open()) {
+                var image = NativeImage.read(stream);
+                int w = image.getWidth();
+                int h = image.getHeight();
+                image.close();
+                return h > 0 ? (float) w / h : -1f;
+            }
+        } catch (Exception ignored) {
+            return -1f;
+        }
+    }
+
     private void updateTextScale(float bookWidth) {
         float fontSize = bookWidth * FONT_RATIO;
         if (Math.abs(fontSize - textLabel.getTextStyle().fontSize()) > 0.01f) {
@@ -458,21 +520,27 @@ public class JournalGui {
 
     private void updateContent() {
         Page page = pages.get(currentPage);
-        textLabel.setText(Component.literal(page.text()));
+        textLabel.setText(page.text());
+        titleLabel.setText(page.title().copy().withStyle(net.minecraft.ChatFormatting.BOLD));
         if (page.image() != null) {
-            imageBox.style(s -> s.background(SpriteTexture.of(page.image())));
+            var sprite = SpriteTexture.of(page.image());
+            imageBox.style(s -> s.background(sprite));
+            float ratio = getImageAspectRatio(page.image());
+            if (ratio > 0) {
+                imageBox.layout(l -> l.aspectRatio(ratio));
+            }
+            imageBox.setVisible(true);
+        } else {
+            imageBox.setVisible(false);
         }
-        pageLabel.setText(Component.literal(pageText()));
         renderNotes();
+        updateTextScale(book != null ? book.getSizeWidth() : 0);
+        updateActiveZones();
     }
 
-    private void updateActiveZones(UIElement prevZone, UIElement nextZone) {
-        prevZone.setActive(currentPage > 0);
-        nextZone.setActive(currentPage < pages.size() - 1);
-    }
-
-    private String pageText() {
-        return "Page " + (currentPage + 1) + " / " + pages.size();
+    private void updateActiveZones() {
+        if (prevButton != null) prevButton.setVisible(currentPage > 0);
+        if (nextButton != null) nextButton.setVisible(currentPage < pages.size() - 1);
     }
 
     private void playPageTurnSound() {
