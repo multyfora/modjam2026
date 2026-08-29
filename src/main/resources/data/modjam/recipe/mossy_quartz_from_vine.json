@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "minecraft:vine",
+    "minecraft:quartz_block"
+  ],
+  "result": {
+    "id": "modjam:mossy_quartz",
+    "count": 1
+  }
+}

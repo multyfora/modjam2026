@@ -104,6 +104,10 @@ public class RichTextElement extends UIElement {
         return revealChars >= total;
     }
 
+    public int lineCount() {
+        return lines.size();
+    }
+
     @Override
     protected void onLayoutChanged() {
         super.onLayoutChanged();

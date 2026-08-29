@@ -44,6 +44,7 @@ import net.multyfora.modjam.light.LightEnergyManager;
 import net.multyfora.modjam.lightweaver.LightWeaverShapes;
 import net.multyfora.modjam.lightweaver.LightWeaverShapes.WeaverShape;
 import net.multyfora.modjam.lightweaver.WeaverPaper;
+import net.multyfora.modjam.modjam;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
@@ -73,6 +74,9 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
     private Holder<Enchantment> pendingEnchantment;
     private int pendingLevel;
     private String pendingPattern;
+    private int breedCooldown;
+
+    private static final int BREED_COOLDOWN_TICKS = 6000;
 
     private final AnimatableInstanceCache animatableCache = new InstancedAnimatableInstanceCache(this);
 
@@ -125,6 +129,7 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
                 pendingPattern = packed;
             }
         });
+        breedCooldown = input.getInt("breed_cooldown").orElse(0);
         if (input.getBooleanOr("processing", false)) {
             entityData.set(DATA_PROCESSING, true);
             setProgress(input.getInt("progress").orElse(0));
@@ -151,6 +156,9 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
             output.store("armor", ItemStack.OPTIONAL_CODEC, resource.toStack(itemHandler.getAmountAsInt(0)));
         }
         output.storeNullable("pattern", Codec.STRING, pendingPattern);
+        if (breedCooldown > 0) {
+            output.putInt("breed_cooldown", breedCooldown);
+        }
         if (!getPendingPaper().isEmpty()) {
             output.store("paper", ItemStack.OPTIONAL_CODEC, getPendingPaper());
         }
@@ -166,6 +174,9 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
     @Override
     public void tick() {
         super.tick();
+        if (breedCooldown > 0) {
+            breedCooldown--;
+        }
         if (level().isClientSide()) {
             if (isProcessing() && random.nextInt(4) == 0) {
                 level().addParticle(ParticleTypes.END_ROD,
@@ -240,6 +251,12 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
         ItemStack held = player.getItemInHand(hand);
+        if (held.is(Items.AMETHYST_SHARD)) {
+            if (level().isClientSide()) {
+                return InteractionResult.SUCCESS;
+            }
+            return tryBreed(player, held);
+        }
         if (level().isClientSide()) {
             return WeaverPaper.isPaper(held) || EnchantmentHelper.canStoreEnchantments(held)
                     || (player.isShiftKeyDown() && !getHeldItem().isEmpty())
@@ -452,6 +469,34 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
         entityData.set(DATA_ITEM, ItemStack.EMPTY);
     }
 
+    private InteractionResult tryBreed(Player player, ItemStack held) {
+        if (breedCooldown > 0) {
+            playFail();
+            return InteractionResult.SUCCESS;
+        }
+        if (!(level() instanceof ServerLevel serverLevel)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!player.getAbilities().instabuild) {
+            held.shrink(1);
+        }
+        breedCooldown = BREED_COOLDOWN_TICKS;
+        LightWeaverEntity child = modjam.LIGHT_WEAVER_ENTITY.get().create(serverLevel, net.minecraft.world.entity.EntitySpawnReason.BREEDING);
+        if (child == null) {
+            return InteractionResult.SUCCESS;
+        }
+        Vec3 offset = new Vec3((random.nextDouble() - 0.5) * 2.0, 0.0, (random.nextDouble() - 0.5) * 2.0);
+        Vec3 pos = position().add(offset);
+        child.setPos(pos.x, pos.y, pos.z);
+        child.setYRot(random.nextFloat() * 360.0f);
+        serverLevel.addFreshEntity(child);
+        serverLevel.sendParticles(ParticleTypes.HEART, getX(), getY() + 1.0, getZ(), 7, 0.4, 0.4, 0.4, 0.1);
+        child.level().addParticle(ParticleTypes.HEART, child.getX(), child.getY() + 1.0, child.getZ(), 0.0, 0.4, 0.0);
+        playSound(SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 1.2f);
+        serverLevel.playSound(null, blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.NEUTRAL, 0.8f, 1.4f);
+        return InteractionResult.SUCCESS;
+    }
+
     private void playFail() {
         level().playSound(null, blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 1.0f, 0.7f);
     }
@@ -506,7 +551,7 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
             if (LightWeaverEntity.this.isProcessing() || target == null) {
                 return false;
             }
-            return LightEnergyManager.isActiveSource(LightWeaverEntity.this.level().getBlockState(target))
+            return LightEnergyManager.isActiveSource(LightWeaverEntity.this.level(), target)
                     && distanceToTargetSq() > LIGHT_STOP_DISTANCE_SQ;
         }
 
@@ -569,7 +614,7 @@ public class LightWeaverEntity extends PathfinderMob implements StatelessGeoEnti
             BlockPos best = null;
             double bestDistanceSq = Double.MAX_VALUE;
             for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-                if (!LightEnergyManager.isActiveSource(LightWeaverEntity.this.level().getBlockState(pos))) {
+                if (!LightEnergyManager.isActiveSource(LightWeaverEntity.this.level(), pos)) {
                     continue;
                 }
                 double distanceSq = LightWeaverEntity.this.distanceToSqr(Vec3.atCenterOf(pos));

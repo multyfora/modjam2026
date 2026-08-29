@@ -6,8 +6,8 @@ import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
-import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.TextField;
+import com.lowdragmc.lowdraglib2.gui.texture.ColorRectTexture;
 import com.lowdragmc.lowdraglib2.gui.texture.SDFRectTexture;
 import dev.vfyjxf.taffy.style.AlignContent;
 import dev.vfyjxf.taffy.style.AlignItems;
@@ -17,8 +17,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.multyfora.modjam.block.PortableStarBlockEntity;
 import net.multyfora.modjam.network.SetStarMysticalPayload;
+import org.lwjgl.glfw.GLFW;
 
 public final class PortableStarGui {
+
+    private static final int OUTER_GOLD = 0xFF6B4A20;
+    private static final int GOLD_BORDER = 0xFFD4A840;
+    private static final int INNER_STONE = 0xFF3A2410;
+    private static final int DARK_GOLD = 0xFFB8860B;
+    private static final int DEEP_BG = 0xFF120A04;
+    private static final int BUTTON_TEXT = 0xFFFFF3D6;
+    private static final int VIGNETTE = 0xB0000000;
+    private static final int PANEL_WIDTH = 240;
 
     private final BlockPos pos;
     private double value;
@@ -34,10 +44,6 @@ public final class PortableStarGui {
     }
 
     private ModularUI createUI() {
-        var title = new Label();
-        title.setText(Component.literal("Mystical Tuning"));
-        title.textStyle(ts -> ts.textColor(0xFFFFD700).textShadow(false).fontSize(12));
-
         var field = new TextField();
         field.setNumbersOnlyDouble(PortableStarBlockEntity.MIN_MYSTICAL, PortableStarBlockEntity.MAX_MYSTICAL);
         field.setText(format(value));
@@ -46,48 +52,70 @@ public final class PortableStarGui {
                 value = Double.parseDouble(s.trim());
             } catch (NumberFormatException ignored) { }
         });
-        field.layout(l -> l.width(150).height(20));
+        field.layout(l -> l.width(170).height(20));
+        field.style(s -> s.background(SDFRectTexture.of(0xFF1A0A03).setRadius(4f).setBorderColor(DARK_GOLD)));
 
-        var adjustRow = new UIElement()
-                .layout(l -> l.flexDirection(FlexDirection.ROW).gapAll(4).alignItems(AlignItems.CENTER));
-        for (double step : new double[] {-1.0, -0.1, 0.1, 1.0}) {
-            var button = new Button().setText((step > 0 ? "+" : "") + trimNumber(step));
-            button.layout(l -> l.width(34).height(18));
-            button.textStyle(ts -> ts.textShadow(false).fontSize(9));
-            button.addEventListener(UIEvents.CLICK, e -> adjust(step, field));
-            adjustRow.addChild(button);
-        }
-
-        var apply = new Button().setText("Apply");
-        apply.layout(l -> l.width(150).height(20));
-        apply.textStyle(ts -> ts.textShadow(false));
-        apply.addEventListener(UIEvents.CLICK, e -> apply());
+        var confirm = new Button().setText(Component.literal("Confirm"));
+        confirm.layout(l -> l.width(170).height(22));
+        confirm.textStyle(ts -> ts.textColor(BUTTON_TEXT).textShadow(true).fontSize(11));
+        confirm.style(s -> s.background(SDFRectTexture.of(0xCC3A2410).setRadius(6f).setBorderColor(DARK_GOLD)));
+        confirm.buttonStyle(s -> s
+                .baseTexture(SDFRectTexture.of(0xCC3A2410).setRadius(6f).setBorderColor(DARK_GOLD))
+                .hoverTexture(SDFRectTexture.of(0xCC8B6914).setRadius(6f).setBorderColor(0xFFFFD700))
+                .pressedTexture(SDFRectTexture.of(0xCC5C3A00).setRadius(6f).setBorderColor(GOLD_BORDER)));
+        confirm.addEventListener(UIEvents.CLICK, e -> apply());
 
         var panel = new UIElement()
-                .layout(l -> l.width(190).flexDirection(FlexDirection.COLUMN)
-                        .alignItems(AlignItems.CENTER).gapAll(8).paddingAll(10))
-                .style(s -> s.background(SDFRectTexture.of(0xE2170803).setRadius(8f).setBorderColor(0xFFD4A840)))
-                .addChildren(title, field, adjustRow, apply);
+                .layout(l -> l.widthPercent(100).heightAuto().flexDirection(FlexDirection.COLUMN).alignItems(AlignItems.CENTER).paddingAll(16).gapAll(10))
+                .style(s -> s.background(SDFRectTexture.of(DEEP_BG).setRadius(6f)))
+                .addChildren(field, confirm);
 
-        var root = new UIElement()
-                .layout(l -> l.widthPercent(100).heightPercent(100).flexDirection(FlexDirection.COLUMN)
-                        .justifyContent(AlignContent.CENTER).alignItems(AlignItems.CENTER))
+        var innerBezel = new UIElement()
+                .layout(l -> l.widthPercent(100).heightAuto().paddingAll(2))
+                .style(s -> s.background(SDFRectTexture.of(INNER_STONE).setRadius(8f).setBorderColor(DARK_GOLD)))
                 .addChild(panel);
 
-        return ModularUI.of(UI.of(root));
-    }
+        var bezel = new UIElement()
+                .layout(l -> l.width(PANEL_WIDTH).heightAuto().paddingAll(3))
+                .style(s -> s.background(SDFRectTexture.of(OUTER_GOLD).setRadius(10f).setBorderColor(GOLD_BORDER)))
+                .addChild(innerBezel);
 
-    private void adjust(double step, TextField field) {
-        value = Math.clamp(value + step, PortableStarBlockEntity.MIN_MYSTICAL, PortableStarBlockEntity.MAX_MYSTICAL);
-        field.setText(format(value));
+        var root = new UIElement()
+                .layout(l -> l.widthPercent(100).heightPercent(100).flexDirection(FlexDirection.COLUMN).justifyContent(AlignContent.CENTER).alignItems(AlignItems.CENTER))
+                .style(s -> s.background(new ColorRectTexture(VIGNETTE)))
+                .addChild(bezel);
+
+        root.addEventListener(UIEvents.KEY_DOWN, e -> {
+            if (e.keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                Minecraft.getInstance().gui.setScreen(null);
+                e.stopPropagation();
+            } else if (e.keyCode == GLFW.GLFW_KEY_E || e.keyCode == GLFW.GLFW_KEY_ENTER || e.keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                apply();
+                e.stopPropagation();
+            }
+        }, true);
+
+        boolean[] focusedOnce = {false};
+        root.addEventListener(UIEvents.TICK, e -> {
+            if (!focusedOnce[0]) {
+                field.focus();
+                focusedOnce[0] = true;
+            }
+        });
+
+        var mui = ModularUI.of(UI.of(root));
+        mui.shouldCloseOnEsc(false);
+        mui.shouldCloseOnKeyInventory(false);
+        return mui;
     }
 
     private void apply() {
         var connection = Minecraft.getInstance().getConnection();
         if (connection != null) {
-            connection.send(new SetStarMysticalPayload(pos.getX(), pos.getY(), pos.getZ(), value).toVanillaServerbound());
+            double clamped = Math.clamp(value, PortableStarBlockEntity.MIN_MYSTICAL, PortableStarBlockEntity.MAX_MYSTICAL);
+            connection.send(new SetStarMysticalPayload(pos.getX(), pos.getY(), pos.getZ(), clamped).toVanillaServerbound());
         }
-        Minecraft.getInstance().player.closeContainer();
+        Minecraft.getInstance().gui.setScreen(null);
     }
 
     private static String format(double value) {

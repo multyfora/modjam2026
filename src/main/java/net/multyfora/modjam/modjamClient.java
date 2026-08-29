@@ -31,6 +31,7 @@ import net.multyfora.modjam.client.ShotBeamRenderer;
 import net.multyfora.modjam.client.model.MonocleWornLayer;
 import net.multyfora.modjam.client.renderer.BrightestEntityRenderer;
 import net.multyfora.modjam.client.renderer.LightWeaverRenderer;
+import net.multyfora.modjam.client.renderer.PortableStarRenderer;
 import net.multyfora.modjam.client.renderer.WallWritingRenderer;
 import net.multyfora.modjam.network.WallWritingReadPayload;
 import net.multyfora.modjam.client.ClientJournalState;
@@ -78,6 +79,7 @@ public class modjamClient {
         event.registerEntityRenderer(modjam.BRIGHTEST_ENTITY.get(), BrightestEntityRenderer::new);
         event.registerEntityRenderer(modjam.LIGHT_WEAVER_ENTITY.get(), LightWeaverRenderer::new);
         event.registerEntityRenderer(modjam.WALL_WRITING_ENTITY.get(), WallWritingRenderer::new);
+        event.registerBlockEntityRenderer(modjam.PORTABLE_STAR_BLOCK_ENTITY.get(), PortableStarRenderer::new);
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {

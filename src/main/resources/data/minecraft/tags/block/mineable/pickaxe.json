@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "modjam:cracked_quartz",
+    "modjam:mossy_quartz",
+    "modjam:mossy_quartz_stairs",
+    "modjam:mossy_quartz_slab",
+    "modjam:singularity_crystal",
+    "modjam:light_urn",
+    "modjam:mystic_brazier",
+    "modjam:portable_star",
+    "modjam:light_conduit"
+  ]
+}

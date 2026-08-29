@@ -1,0 +1,106 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 64,
+				"texture_height": 64,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "base",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-8, 0, -8], "size": [16, 2, 16], "uv": [0, 0]},
+						{"origin": [-6, 2, -6], "size": [12, 2, 12], "uv": [0, 18]}
+					]
+				},
+				{
+					"name": "sun",
+					"pivot": [0, 8, 0]
+				},
+				{
+					"name": "sun inner",
+					"parent": "sun",
+					"pivot": [0, 8, 0],
+					"cubes": [
+						{"origin": [-2, 7, -2], "size": [4, 4, 4], "uv": [0, 32]}
+					]
+				},
+				{
+					"name": "sun outer",
+					"parent": "sun",
+					"pivot": [-0.5, 9.16667, -0.16667]
+				},
+				{
+					"name": "bone",
+					"parent": "sun outer",
+					"pivot": [2, 11, 2],
+					"cubes": [
+						{"origin": [1, 10, 1], "size": [2, 2, 2], "uv": [16, 32]}
+					]
+				},
+				{
+					"name": "bone2",
+					"parent": "sun outer",
+					"pivot": [2, 11, -2],
+					"cubes": [
+						{"origin": [1, 10, -3], "size": [2, 2, 2], "pivot": [2, 11, -2], "rotation": [0, 90, 0], "uv": [16, 32]}
+					]
+				},
+				{
+					"name": "bone3",
+					"parent": "sun outer",
+					"pivot": [-2, 7, 2],
+					"cubes": [
+						{"origin": [-3, 6, 1], "size": [2, 2, 2], "pivot": [-2, 7, 2], "rotation": [0, 0, -180], "uv": [16, 32]}
+					]
+				},
+				{
+					"name": "bone4",
+					"parent": "sun outer",
+					"pivot": [-2, 7, -2],
+					"cubes": [
+						{"origin": [-3, 6, -3], "size": [2, 2, 2], "pivot": [-2, 7, -2], "rotation": [0, 90, -180], "uv": [16, 32]}
+					]
+				},
+				{
+					"name": "bone5",
+					"parent": "sun outer",
+					"pivot": [-2, 11, -2],
+					"cubes": [
+						{"origin": [-3, 10, -3], "size": [2, 2, 2], "pivot": [-2, 11, -2], "rotation": [0, 180, 0], "uv": [16, 32]}
+					]
+				},
+				{
+					"name": "bone6",
+					"parent": "sun outer",
+					"pivot": [2, 7, -2],
+					"cubes": [
+						{"origin": [1, 6, -3], "size": [2, 2, 2], "pivot": [2, 7, -2], "rotation": [90, 0, 90], "uv": [16, 32]}
+					]
+				},
+				{
+					"name": "bone7",
+					"parent": "sun outer",
+					"pivot": [2, 7, 2],
+					"cubes": [
+						{"origin": [1, 6, 1], "size": [2, 2, 2], "pivot": [2, 7, 2], "rotation": [0, 0, 90], "uv": [16, 32]}
+					]
+				},
+				{
+					"name": "bone8",
+					"parent": "sun outer",
+					"pivot": [-2, 11, 2],
+					"cubes": [
+						{"origin": [-3, 10, 1], "size": [2, 2, 2], "pivot": [-2, 11, 2], "rotation": [0, -90, 0], "uv": [16, 32]}
+					]
+				}
+			]
+		}
+	]
+}

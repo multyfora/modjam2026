@@ -6,9 +6,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
 import net.multyfora.modjam.block.SoulLightBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public final class LightEnergyManager {
@@ -41,33 +46,90 @@ public final class LightEnergyManager {
 
     public static boolean isActiveSource(BlockState state) {
         RegisteredSource registered = SOURCES.get(state.getBlock());
-        return registered != null && registered.active().test(state);
+        if (registered != null && registered.active().test(state)) return true;
+        return false;
+    }
+
+    public static boolean isActiveSource(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (isActiveSource(state)) return true;
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof ForwardingLightSource fwd) {
+            return fwd.forwardedEnergy().isPresent();
+        }
+        return false;
     }
 
     public static LightEnergy compute(Level level, BlockPos pos) {
-        double intensity = 0;
-        double componentSum = 0;
-        int componentCount = 0;
+        double[] intensity = {0};
+        double[] componentSum = {0};
+        int[] componentCount = {0};
+        Set<BlockPos> seenSources = new HashSet<>();
+        Set<BlockPos> visitedConduits = new HashSet<>();
+        Deque<BlockPos> queue = new ArrayDeque<>();
 
         for (int dx = -RANGE; dx <= RANGE; dx++) {
             for (int dy = -RANGE; dy <= RANGE; dy++) {
                 for (int dz = -RANGE; dz <= RANGE; dz++) {
                     if (dx == 0 && dy == 0 && dz == 0) continue;
-                    BlockState state = level.getBlockState(pos.offset(dx, dy, dz));
-                    RegisteredSource registered = SOURCES.get(state.getBlock());
-                    if (registered == null || !registered.active().test(state)) continue;
-                    LightSource source = registered.source();
-                    if (level.getBlockEntity(pos.offset(dx, dy, dz)) instanceof TunableLightSource tunable) {
-                        source = new LightSource(source.intensity(), tunable.tunedMystical());
+                    BlockPos neighbor = pos.offset(dx, dy, dz);
+                    BlockEntity be = level.getBlockEntity(neighbor);
+                    if (be instanceof ForwardingLightSource fwd && fwd.forwardedEnergy().isPresent()) {
+                        if (visitedConduits.add(neighbor)) queue.add(neighbor);
+                        continue;
                     }
-                    intensity += source.intensity();
-                    componentSum += source.mysticalComponent();
-                    componentCount++;
+                    collectRealSource(level, neighbor, seenSources, intensity, componentSum, componentCount);
                 }
             }
         }
 
-        return new LightEnergy(intensity, componentCount == 0 ? 0 : componentSum / componentCount);
+        while (!queue.isEmpty()) {
+            BlockPos conduitPos = queue.poll();
+            for (int dx = -RANGE; dx <= RANGE; dx++) {
+                for (int dy = -RANGE; dy <= RANGE; dy++) {
+                    for (int dz = -RANGE; dz <= RANGE; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        BlockPos sourcePos = conduitPos.offset(dx, dy, dz);
+                        if (seenSources.contains(sourcePos)) continue;
+                        BlockEntity be = level.getBlockEntity(sourcePos);
+                        if (be instanceof ForwardingLightSource) continue;
+                        collectRealSource(level, sourcePos, seenSources, intensity, componentSum, componentCount);
+                    }
+                }
+            }
+            for (int dx = -RANGE; dx <= RANGE; dx++) {
+                for (int dy = -RANGE; dy <= RANGE; dy++) {
+                    for (int dz = -RANGE; dz <= RANGE; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        BlockPos next = conduitPos.offset(dx, dy, dz);
+                        if (visitedConduits.contains(next)) continue;
+                        BlockEntity nbe = level.getBlockEntity(next);
+                        if (nbe instanceof ForwardingLightSource nFwd && nFwd.forwardedEnergy().isPresent()) {
+                            visitedConduits.add(next);
+                            queue.add(next);
+                        }
+                    }
+                }
+            }
+        }
+
+        return new LightEnergy(intensity[0], componentCount[0] == 0 ? 0 : componentSum[0] / componentCount[0]);
+    }
+
+    private static void collectRealSource(Level level, BlockPos pos, Set<BlockPos> seen, double[] intensity, double[] sum, int[] count) {
+        if (seen.contains(pos)) return;
+        BlockState state = level.getBlockState(pos);
+        RegisteredSource registered = SOURCES.get(state.getBlock());
+        if (registered == null || !registered.active().test(state)) return;
+        BlockEntity be = level.getBlockEntity(pos);
+        LightSource source = registered.source();
+        if (be instanceof TunableLightSource tunable) {
+            source = new LightSource(source.intensity(), tunable.tunedMystical());
+        }
+        seen.add(pos);
+        intensity[0] += source.intensity();
+        sum[0] += source.mysticalComponent();
+        count[0]++;
     }
 
     public static void drainAll(Level level, BlockPos pos) {

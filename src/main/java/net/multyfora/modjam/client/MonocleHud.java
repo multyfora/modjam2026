@@ -72,8 +72,13 @@ public class MonocleHud {
                 energy.intensity(), energy.mysticalComponent());
         }
         label.setText(RichText.parse(line));
-        // bypass the typewriter reveal — show the full reading immediately
         label.setRevealChars(Integer.MAX_VALUE);
+        int size = 12;
+        label.setFontSize(size);
+        while (label.lineCount() > 1 && size > 7) {
+            size--;
+            label.setFontSize(size);
+        }
     }
 
     private void hideUI() {

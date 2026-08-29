@@ -14,6 +14,7 @@
   "block.modjam.mossy_quartz_slab": "Mossy Quartz Slab",
   "block.modjam.mystic_brazier": "Mystic Brazier",
   "block.modjam.portable_star": "Portable Star",
+  "block.modjam.light_conduit": "Light Conduit",
   "tooltip.modjam.sealed_singularity.charges": "Charges: %s / %s",
   "tooltip.modjam.sealed_singularity.mode": "State: %s",
   "tooltip.modjam.sealed_singularity.mode.sealed": "Sealed",

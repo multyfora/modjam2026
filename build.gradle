@@ -41,6 +41,16 @@ repositories {
 
     // LDLib2 library
     maven { url = 'https://maven.firstdark.dev/snapshots' }
+
+    // JEI - dev-only (Jared's maven + fallback)
+    maven {
+        name = "Jared's maven"
+        url = 'https://maven.blamejared.com/'
+    }
+    maven {
+        name = 'ModMaven'
+        url = 'https://modmaven.dev'
+    }
 }
 
 base {
@@ -131,6 +141,8 @@ dependencies {
 
     // LDLib2 library (UI, rendering, sync, persistence, editors)
     implementation "com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${ldlib2_version}"
+
+    localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

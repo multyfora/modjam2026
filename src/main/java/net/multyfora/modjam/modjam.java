@@ -37,6 +37,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.multyfora.modjam.block.AmethystCrystalBlockEntity;
 import net.multyfora.modjam.block.CrackedQuartzBlock;
+import net.multyfora.modjam.block.LightConduitBlock;
+import net.multyfora.modjam.block.LightConduitBlockEntity;
 import net.multyfora.modjam.block.MysticBrazierBlock;
 import net.multyfora.modjam.block.MysticBrazierBlockEntity;
 import net.multyfora.modjam.block.PortableStarBlock;
@@ -134,6 +136,7 @@ public class modjam {
         properties -> new MysticalMonocle(properties
             .stacksTo(1)
             .component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD)
+                .setAsset(ResourceKey.create(net.minecraft.world.item.equipment.EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath(MODID, "mystical_monocle")))
                 .build())));
 
     public static final DeferredHolder<EntityType<?>, EntityType<LightWeaverEntity>> LIGHT_WEAVER_ENTITY =
@@ -160,14 +163,14 @@ public class modjam {
     public static final DeferredBlock<SingularityCrystalBlock> SINGULARITY_CRYSTAL_BLOCK = BLOCKS.registerBlock(
         "singularity_crystal",
         SingularityCrystalBlock::new,
-        p -> p.mapColor(MapColor.COLOR_BLACK).strength(3.5f).sound(SoundType.AMETHYST).noOcclusion()
+        p -> p.mapColor(MapColor.COLOR_BLACK).strength(3.5f).sound(SoundType.AMETHYST).noOcclusion().requiresCorrectToolForDrops()
     );
     public static final DeferredItem<BlockItem> SINGULARITY_CRYSTAL_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("singularity_crystal", SINGULARITY_CRYSTAL_BLOCK);
 
     public static final DeferredBlock<Block> LIGHT_URN_BLOCK = BLOCKS.registerBlock(
         "light_urn",
         Block::new,
-        p -> p.strength(1.5f).sound(SoundType.STONE).noOcclusion().lightLevel(state -> 1)
+        p -> p.strength(1.5f).sound(SoundType.STONE).noOcclusion().lightLevel(state -> 1).requiresCorrectToolForDrops()
     );
     public static final DeferredItem<BlockItem> LIGHT_URN_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("light_urn", LIGHT_URN_BLOCK);
 
@@ -188,7 +191,7 @@ public class modjam {
     public static final DeferredBlock<PortableStarBlock> PORTABLE_STAR_BLOCK = BLOCKS.registerBlock(
         "portable_star",
         PortableStarBlock::new,
-        p -> p.mapColor(MapColor.COLOR_YELLOW).strength(3.0f).sound(SoundType.AMETHYST).noOcclusion()
+        p -> p.mapColor(MapColor.COLOR_YELLOW).strength(3.0f).sound(SoundType.AMETHYST).noOcclusion().requiresCorrectToolForDrops()
     );
     public static final DeferredItem<BlockItem> PORTABLE_STAR_ITEM = ITEMS.registerSimpleBlockItem("portable_star", PORTABLE_STAR_BLOCK);
 
@@ -198,30 +201,44 @@ public class modjam {
             () -> new BlockEntityType<>(PortableStarBlockEntity::new, Set.of(PORTABLE_STAR_BLOCK.get()))
         );
 
+    public static final DeferredBlock<LightConduitBlock> LIGHT_CONDUIT_BLOCK = BLOCKS.registerBlock(
+        "light_conduit",
+        LightConduitBlock::new,
+        p -> p.mapColor(MapColor.COLOR_YELLOW).strength(2.0f).sound(SoundType.AMETHYST).noOcclusion()
+            .lightLevel(state -> state.getValue(LightConduitBlock.POWERED) ? 10 : 0)
+    );
+    public static final DeferredItem<BlockItem> LIGHT_CONDUIT_ITEM = ITEMS.registerSimpleBlockItem("light_conduit", LIGHT_CONDUIT_BLOCK);
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LightConduitBlockEntity>> LIGHT_CONDUIT_BLOCK_ENTITY =
+        BLOCK_ENTITY_TYPES.register(
+            "light_conduit",
+            () -> new BlockEntityType<>(LightConduitBlockEntity::new, Set.of(LIGHT_CONDUIT_BLOCK.get()))
+        );
+
     public static final DeferredBlock<CrackedQuartzBlock> CRACKED_QUARTZ_BLOCK = BLOCKS.registerBlock(
         "cracked_quartz",
         CrackedQuartzBlock::new,
-        p -> p.strength(1.0f).sound(SoundType.STONE)
+        p -> p.strength(1.0f).sound(SoundType.STONE).requiresCorrectToolForDrops()
     );
     public static final DeferredItem<BlockItem> CRACKED_QUARTZ_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("cracked_quartz", CRACKED_QUARTZ_BLOCK);
 
     public static final DeferredBlock<Block> MOSSY_QUARTZ_BLOCK = BLOCKS.registerSimpleBlock(
         "mossy_quartz",
-        p -> p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE)
+        p -> p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE).requiresCorrectToolForDrops()
     );
     public static final DeferredItem<BlockItem> MOSSY_QUARTZ_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("mossy_quartz", MOSSY_QUARTZ_BLOCK);
 
     public static final DeferredBlock<StairBlock> MOSSY_QUARTZ_STAIRS = BLOCKS.registerBlock(
         "mossy_quartz_stairs",
         p -> new StairBlock(MOSSY_QUARTZ_BLOCK.get().defaultBlockState(),
-            p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE))
+            p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE).requiresCorrectToolForDrops())
     );
     public static final DeferredItem<BlockItem> MOSSY_QUARTZ_STAIRS_ITEM = ITEMS.registerSimpleBlockItem("mossy_quartz_stairs", MOSSY_QUARTZ_STAIRS);
 
     public static final DeferredBlock<SlabBlock> MOSSY_QUARTZ_SLAB = BLOCKS.registerBlock(
         "mossy_quartz_slab",
         SlabBlock::new,
-        p -> p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE)
+        p -> p.mapColor(MapColor.COLOR_CYAN).strength(1.0f).sound(SoundType.STONE).requiresCorrectToolForDrops()
     );
     public static final DeferredItem<BlockItem> MOSSY_QUARTZ_SLAB_ITEM = ITEMS.registerSimpleBlockItem("mossy_quartz_slab", MOSSY_QUARTZ_SLAB);
 
@@ -268,6 +285,7 @@ public class modjam {
                 output.accept(MOSSY_QUARTZ_SLAB_ITEM.get());
                 output.accept(MYSTIC_BRAZIER_ITEM.get());
                 output.accept(PORTABLE_STAR_ITEM.get());
+                output.accept(LIGHT_CONDUIT_ITEM.get());
             }).build());
 
     public modjam(IEventBus modEventBus, ModContainer modContainer) {

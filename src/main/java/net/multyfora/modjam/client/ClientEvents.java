@@ -27,6 +27,7 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (event.getSide() != LogicalSide.CLIENT || event.getHand() != InteractionHand.MAIN_HAND) return;
+        if (event.getEntity().isShiftKeyDown()) return;
         var pos = event.getPos();
         if (event.getLevel().getBlockState(pos).is(modjam.PORTABLE_STAR_BLOCK.get())) {
             if (event.getLevel().getBlockEntity(pos) instanceof PortableStarBlockEntity star) {

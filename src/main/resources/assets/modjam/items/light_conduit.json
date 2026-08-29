@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "modjam:item/portable_star"
+    "model": "modjam:block/light_conduit_core"
   }
 }
