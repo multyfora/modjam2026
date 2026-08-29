@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": { "model": "don:block/mystic_brazier" },
+    "lit=true": { "model": "don:block/mystic_brazier_lit" }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:nether_star" }
+      ]
+    },
+    {
+      "type": "don:not_fired",
+      "event": "don:amethyst_discovered"
+    }
+  ],
+  "lines": [
+    "A light of the {#171707}withers{/}. heart...",
+    "Nether stars are {b}our{/} invention",
+    "But they are still from times {b}long forgotten{/}",
+    "When {b}Nayir{/} still {shake:1}{#ff0000}killed{/} its own kind.",
+    "You call it war.",
+    "They were invented to power our vehicles and as you can see, the {#171707}wither{/} too, it was the greatest {shake:1}killing machine{/}",
+    "Although, only {i}half{/} machine"
+  ],
+  "once": true
+}

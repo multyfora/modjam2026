@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IAI",
+    "I I",
+    "ISI"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "A": "minecraft:amethyst_shard",
+    "S": "don:singularity_crystal"
+  },
+  "result": {
+    "id": "don:sealed_singularity",
+    "count": 1
+  }
+}

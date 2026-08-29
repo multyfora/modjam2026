@@ -1,0 +1,21 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:furnace" }
+      ]
+    },
+    {
+      "type": "don:time_after",
+      "event": "don:amethyst_discovered",
+      "ticks": 0
+    }
+  ],
+  "lines": [
+    "You built a {#FFD700}stomach of stone{/}. feed it, and it {i}burps{/} heat.",
+    "There is not one {pop:0.4}mystical component{/} in it. {shake:1}not one{/} - and yet the bread it bakes keeps you breathing.",
+    "You are learning what fire is: a {b}tool{/}. You are still learning what light is."
+  ],
+  "once": true
+}

@@ -1,0 +1,15 @@
+{
+  "image": "don:textures/gui/journal/light_drain.png",
+  "description": "journal.don.light_drain",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "minecraft:enchanted_book"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "image": "don:textures/gui/journal/sealed_singularity.png",
+  "description": "journal.don.sealed_singularity",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "don:sealed_singularity"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "image": "don:textures/gui/journal/amethyst.png",
+  "description": "journal.don.amethyst",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:nearby_block",
+      "block": "minecraft:amethyst_block",
+      "radius": 8
+    },
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "minecraft:amethyst"
+        }
+      ]
+    }
+  ]
+}

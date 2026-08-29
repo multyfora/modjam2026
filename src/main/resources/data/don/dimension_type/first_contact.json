@@ -1,0 +1,22 @@
+{
+  "ambient_light": 0.15,
+  "attributes": {
+    "minecraft:visual/fog_color": "#000000",
+    "minecraft:visual/sky_color": "#000000",
+    "neoforge:custom_skybox": "don:first_contact"
+  },
+  "coordinate_scale": 1.0,
+  "default_clock": "minecraft:overworld",
+  "has_ceiling": true,
+  "has_ender_dragon_fight": false,
+  "has_fixed_time": true,
+  "has_skylight": false,
+  "height": 384,
+  "infiniburn": "#minecraft:infiniburn_overworld",
+  "logical_height": 384,
+  "min_y": -64,
+  "monster_spawn_block_light_limit": 0,
+  "monster_spawn_light_level": 15,
+  "skybox": "overworld",
+  "timelines": "#minecraft:in_overworld"
+}

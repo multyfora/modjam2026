@@ -1,0 +1,17 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "#don:leather_armor" },
+        { "items": "#don:iron_armor" }
+      ]
+    }
+  ],
+  "lines": [
+    "Dressing up? {#FFD700}how ceremonious{/} of you.",
+    "I do not wear armor. I {b}am{/} the armor.",
+    "...you look {#C8C8C8}cooler{/}. a little. do not let it get to your head."
+  ],
+  "once": true
+}

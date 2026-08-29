@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "#don:wooden_tools" }
+      ]
+    }
+  ],
+  "lines": [
+    "A {b}tool{/}. made of the {i}tree{/}.",
+    "You will hit a rock twice and it will {shake:1.5}snap{/}.",
+    "Still. {#C8C8C8}admirable{/} that you tried. I suppose."
+  ],
+  "once": true
+}

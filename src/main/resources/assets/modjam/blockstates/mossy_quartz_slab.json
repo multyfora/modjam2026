@@ -1,7 +1,0 @@
-{
-  "variants": {
-    "type=bottom": { "model": "modjam:block/mossy_quartz_slab" },
-    "type=top": { "model": "modjam:block/mossy_quartz_slab_top" },
-    "type=double": { "model": "modjam:block/mossy_quartz_slab_double" }
-  }
-}

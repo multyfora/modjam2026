@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:dragon_egg" }
+      ]
+    }
+  ],
+  "lines": [
+    "Now that the dragon is dead you can finally focus on the {b}}objective{/}.",
+    "No matter how close we get, you have to still remember why I brought you",
+    "And keep the egg as a {shake:0.3}trophy.{/}"
+  ],
+  "once": true
+}

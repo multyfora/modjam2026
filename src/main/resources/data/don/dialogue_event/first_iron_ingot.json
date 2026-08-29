@@ -1,0 +1,18 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:iron_ingot" },
+        { "items": "minecraft:raw_iron" },
+        { "items": "#minecraft:iron_ores" }
+      ]
+    }
+  ],
+  "lines": [
+    "The {#C8C8C8}shiny grey thing{/}. The whole world under your feet is full of it.",
+    "Many things can be made from it. Only the one who shapes it...",
+    "{b}Decides its value{/}"
+  ],
+  "once": true
+}

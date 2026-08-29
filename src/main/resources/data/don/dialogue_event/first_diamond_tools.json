@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "#don:diamond_tools" }
+      ]
+    }
+  ],
+  "lines": [
+    "Hmm {#00FFFF}diamond tools{/}.",
+    "you spent a long time for them, I respect it.",
+    "But still you could've made greater things with it"
+  ],
+  "once": true
+}

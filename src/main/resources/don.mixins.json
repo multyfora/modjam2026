@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.multyfora.don.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "don.refmap.json",
+  "client": [
+    "GameRendererMixin",
+    "GameRendererAccessor",
+    "PostChainAccessor",
+    "PostPassAccessor",
+    "CameraMixin"
+  ],
+  "mixins": [
+    "AmethystClusterMixin",
+    "BowItemMixin",
+    "CampfireBlockMixin",
+    "LanternBlockMixin",
+    "LightEngineMixin",
+    "LevelSetBlockMixin",
+    "ProjectileWeaponItemAccessor",
+    "TorchBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

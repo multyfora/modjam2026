@@ -1,0 +1,19 @@
+{
+  "triggers": [
+    {
+      "type": "don:nearby_block",
+      "block": "don:singularity_crystal",
+      "radius": 16
+    },
+    {
+      "type": "don:time_after",
+      "event": "don:amethyst_discovered",
+      "ticks": 0
+    }
+  ],
+  "lines": [
+    "Something that once was an amethyst...",
+    "Now turned into pure black void."
+  ],
+  "once": true
+}

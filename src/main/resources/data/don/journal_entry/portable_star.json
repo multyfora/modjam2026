@@ -1,0 +1,20 @@
+{
+  "image": "don:textures/gui/journal/portable_star.png",
+  "description": "journal.don.portable_star",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:nearby_block",
+      "block": "don:portable_star",
+      "radius": 8
+    },
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "don:portable_star"
+        }
+      ]
+    }
+  ]
+}

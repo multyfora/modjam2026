@@ -1,0 +1,20 @@
+{
+  "image": "don:textures/gui/journal/soul_light.png",
+  "description": "journal.don.soul_light",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "minecraft:soul_lantern"
+        }
+      ]
+    },
+    {
+      "type": "don:nearby_block",
+      "block": "minecraft:soul_lantern",
+      "radius": 8
+    }
+  ]
+}

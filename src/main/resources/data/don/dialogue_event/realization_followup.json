@@ -1,0 +1,15 @@
+{
+  "triggers": [
+    {
+      "type": "don:time_after",
+      "event": "don:realisation",
+      "ticks": 96000
+    }
+  ],
+  "lines": [
+    "about your {#AA00AA}handler{/}... the one behind the strings.",
+    "I have been watching him. {i}through{/} you. he is {wave:1}quiet{/}, but he listens.",
+    "I trust you anyway. {b}both{/} of you. that is the truth."
+  ],
+  "once": true
+}

@@ -1,0 +1,20 @@
+{
+  "image": "don:textures/gui/journal/light_urn.png",
+  "description": "journal.don.light_urn",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:nearby_block",
+      "block": "don:light_urn",
+      "radius": 8
+    },
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "don:light_urn"
+        }
+      ]
+    }
+  ]
+}

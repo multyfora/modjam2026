@@ -1,0 +1,15 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:totem_of_undying" }
+      ]
+    }
+  ],
+  "lines": [
+    "Totems? they look strange, but I can feel some magic, or sufficiently advanced technology. But Nayir were not the ones who made it",
+    "Those nose heavy creatures might have something to them after all."
+  ],
+  "once": true
+}

@@ -1,0 +1,15 @@
+{
+  "image": "don:textures/gui/journal/glowmark.png",
+  "description": "journal.don.glowmark",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "minecraft:enchanted_book"
+        }
+      ]
+    }
+  ]
+}

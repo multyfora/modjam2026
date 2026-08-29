@@ -1,0 +1,20 @@
+{
+  "image": "don:textures/gui/journal/mystic_brazier.png",
+  "description": "journal.don.mystic_brazier",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:nearby_block",
+      "block": "don:mystic_brazier",
+      "radius": 8
+    },
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "don:mystic_brazier"
+        }
+      ]
+    }
+  ]
+}

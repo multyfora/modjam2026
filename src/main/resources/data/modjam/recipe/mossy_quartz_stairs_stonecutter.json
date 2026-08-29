@@ -1,6 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": "modjam:mossy_quartz",
-  "result": "modjam:mossy_quartz_stairs",
-  "count": 1
-}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": "don:mossy_quartz"
+  },
+  "result": {
+    "id": "don:mossy_quartz_slab",
+    "count": 6
+  }
+}

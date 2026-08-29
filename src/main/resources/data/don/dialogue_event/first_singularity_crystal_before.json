@@ -1,0 +1,17 @@
+{
+  "triggers": [
+    {
+      "type": "don:nearby_block",
+      "block": "don:singularity_crystal",
+      "radius": 16
+    },
+    {
+      "type": "don:not_fired",
+      "event": "don:amethyst_discovered"
+    }
+  ],
+  "lines": [
+    "Finally something worthy, give it light and see what happens!"
+  ],
+  "once": true
+}

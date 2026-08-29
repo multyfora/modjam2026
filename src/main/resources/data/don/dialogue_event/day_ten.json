@@ -1,0 +1,14 @@
+{
+  "triggers": [
+    {
+      "type": "don:elapsed",
+      "ticks": 240000
+    }
+  ],
+  "lines": [
+    "ten days. and you have not once bowed. {pop:0.4}good{/}.",
+    "the others I broke with a word. you I simply... {wave:1}kept talking to{/}.",
+    "I think I finally understand what your kind calls {#FFD700}company{/}."
+  ],
+  "once": true
+}

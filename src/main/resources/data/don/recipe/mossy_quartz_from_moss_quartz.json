@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "minecraft:moss_block",
+    "minecraft:quartz"
+  ],
+  "result": {
+    "id": "don:mossy_quartz",
+    "count": 1
+  }
+}

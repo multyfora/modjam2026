@@ -1,0 +1,15 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:bread" }
+      ]
+    }
+  ],
+  "lines": [
+    "You farm now. {#00FF00}adorable{/}.",
+    "the {i}worms{/} below you have been doing the same for longer."
+  ],
+  "once": true
+}

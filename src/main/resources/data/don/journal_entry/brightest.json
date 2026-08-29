@@ -1,0 +1,20 @@
+{
+  "image": "don:textures/gui/journal/brightest.png",
+  "description": "journal.don.brightest",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:nearby_block",
+      "block": "minecraft:beacon",
+      "radius": 16
+    },
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "don:brightest"
+        }
+      ]
+    }
+  ]
+}

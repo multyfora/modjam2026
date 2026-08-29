@@ -1,0 +1,12 @@
+{
+  "triggers": [
+    {
+      "type": "don:never"
+    }
+  ],
+  "lines": [
+    "{#9BD4FF}{pop:0.4}Isn't this world beautiful?{/}",
+    "{#FFD700}Thanks for helping me.{/}"
+  ],
+  "once": true
+}

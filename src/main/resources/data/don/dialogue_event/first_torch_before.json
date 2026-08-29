@@ -1,0 +1,18 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "#don:torches" }
+      ]
+    },
+    {
+      "type": "don:not_fired",
+      "event": "don:amethyst_discovered"
+    }
+  ],
+  "lines": [
+    "You are still yet to find an actual light..."
+  ],
+  "once": true
+}

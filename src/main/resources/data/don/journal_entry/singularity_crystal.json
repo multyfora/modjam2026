@@ -1,0 +1,20 @@
+{
+  "image": "don:textures/gui/journal/singularity_crystal.png",
+  "description": "journal.don.singularity_crystal",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:nearby_block",
+      "block": "don:singularity_crystal",
+      "radius": 8
+    },
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "don:singularity_crystal"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:leather" }
+      ]
+    }
+  ],
+  "lines": [
+    "{#C8C8C8}You killed a poor creature{/}... and you are {i}proud{/} of it.",
+    "So {shake:1.5}brutal{/}. So... {wave:1}primitive{/}.",
+    "I have created stars. You {b}skinned{/} a cow."
+  ],
+  "once": true
+}

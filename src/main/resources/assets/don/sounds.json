@@ -1,0 +1,11 @@
+{
+  "first_contact_music": {
+    "subtitle": "subtitles.don.first_contact_music",
+    "sounds": [
+      {
+        "name": "don:first_contact_music",
+        "stream": true
+      }
+    ]
+  }
+}

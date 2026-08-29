@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "don:block/mossy_quartz_slab" },
+    "type=top": { "model": "don:block/mossy_quartz_slab_top" },
+    "type=double": { "model": "don:block/mossy_quartz_slab_double" }
+  }
+}

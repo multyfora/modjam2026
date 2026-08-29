@@ -1,0 +1,15 @@
+{
+  "image": "don:textures/gui/journal/mystical_monocle.png",
+  "description": "journal.don.mystical_monocle",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "don:mystical_monocle"
+        }
+      ]
+    }
+  ]
+}

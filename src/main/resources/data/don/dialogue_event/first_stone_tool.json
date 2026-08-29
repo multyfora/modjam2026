@@ -1,0 +1,14 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "#don:stone_tools" }
+      ]
+    }
+  ],
+  "lines": [
+    "{#C8C8C8}{shake:2}Stone tools?{/} really? You're so primitive."
+  ],
+  "once": true
+}

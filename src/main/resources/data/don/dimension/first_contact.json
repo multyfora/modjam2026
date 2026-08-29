@@ -1,0 +1,13 @@
+{
+  "type": "don:first_contact",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "don:first_contact",
+      "features": false,
+      "lakes": false,
+      "layers": [],
+      "structure_overrides": []
+    }
+  }
+}

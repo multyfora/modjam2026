@@ -1,0 +1,20 @@
+{
+  "image": "don:textures/gui/journal/light_weaver.png",
+  "description": "journal.don.light_weaver",
+  "descriptionIsKey": true,
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        {
+          "items": "don:light_weaver"
+        }
+      ]
+    },
+    {
+      "type": "don:nearby_block",
+      "block": "minecraft:amethyst_cluster",
+      "radius": 8
+    }
+  ]
+}

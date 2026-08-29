@@ -1,0 +1,19 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "#don:torches" }
+      ]
+    },
+    {
+      "type": "don:time_after",
+      "event": "don:amethyst_discovered",
+      "ticks": 0
+    }
+  ],
+  "lines": [
+    "That's... kind of cute, how you use light to see."
+  ],
+  "once": true
+}

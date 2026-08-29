@@ -1,0 +1,12 @@
+{
+  "triggers": [
+    {
+      "type": "don:elapsed",
+      "ticks": 48000
+    }
+  ],
+  "lines": [
+    "You know, you progress {wave:1}faster{/} than the other ones."
+  ],
+  "once": true
+}

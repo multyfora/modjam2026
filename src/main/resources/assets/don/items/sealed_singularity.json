@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "don:item/sealed_singularity",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

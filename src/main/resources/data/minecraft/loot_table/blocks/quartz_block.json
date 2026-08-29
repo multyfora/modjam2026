@@ -29,7 +29,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "modjam:cracked_quartz"
+          "name": "don:cracked_quartz"
         }
       ]
     }

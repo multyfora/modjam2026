@@ -1,0 +1,15 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:obsidian" }
+      ]
+    }
+  ],
+  "lines": [
+    "The rock that is child to hot and cold",
+    "Nothing more to it."
+  ],
+  "once": true
+}

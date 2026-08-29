@@ -1,0 +1,20 @@
+{
+  "triggers": [
+    {
+      "type": "don:inventory",
+      "items": [
+        { "items": "minecraft:blaze_rod" }
+      ]
+    },
+    {
+      "type": "don:not_fired",
+      "event": "don:amethyst_discovered"
+    }
+  ],
+  "lines": [
+    "You killed a {#FFA500}flying fire{/}?",
+    "its flame is {shake:1}primitive{/} - a cousin of mine who never {i}grew up{/}.",
+    "{wave:1}rude{/}. ...also kind of impressive."
+  ],
+  "once": true
+}
