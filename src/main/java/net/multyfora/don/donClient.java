@@ -31,6 +31,7 @@ import net.multyfora.don.client.ShotBeamRenderer;
 import net.multyfora.don.client.model.MonocleWornLayer;
 import net.multyfora.don.client.renderer.BrightestEntityRenderer;
 import net.multyfora.don.client.renderer.LightWeaverRenderer;
+import net.multyfora.don.client.renderer.MysticBrazierRenderer;
 import net.multyfora.don.client.renderer.PortableStarRenderer;
 import net.multyfora.don.client.renderer.WallWritingRenderer;
 import net.multyfora.don.network.WallWritingReadPayload;
@@ -80,6 +81,7 @@ public class donClient {
         event.registerEntityRenderer(don.LIGHT_WEAVER_ENTITY.get(), LightWeaverRenderer::new);
         event.registerEntityRenderer(don.WALL_WRITING_ENTITY.get(), WallWritingRenderer::new);
         event.registerBlockEntityRenderer(don.PORTABLE_STAR_BLOCK_ENTITY.get(), PortableStarRenderer::new);
+        event.registerBlockEntityRenderer(don.MYSTIC_BRAZIER_BLOCK_ENTITY.get(), MysticBrazierRenderer::new);
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {

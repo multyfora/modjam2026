@@ -92,6 +92,7 @@ import net.multyfora.don.network.JournalOpenPayload;
 import net.multyfora.don.network.JournalSyncPayload;
 import net.multyfora.don.network.LightBeamPayload;
 import net.multyfora.don.network.OpenBrightestMenuPayload;
+import net.multyfora.don.network.RefuseDealPayload;
 import net.multyfora.don.network.SavePaperPatternPayload;
 import net.multyfora.don.network.SetStarMysticalPayload;
 import net.multyfora.don.network.StartCutscenePayload;
@@ -107,6 +108,7 @@ import java.util.Set;
 public class don {
     public static final String MODID = "don";
     public static final Logger LOGGER = LogUtils.getLogger();
+    private static volatile java.nio.file.Path pendingWorldDeletion = null;
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
@@ -177,7 +179,8 @@ public class don {
     public static final DeferredBlock<MysticBrazierBlock> MYSTIC_BRAZIER_BLOCK = BLOCKS.registerBlock(
         "mystic_brazier",
         MysticBrazierBlock::new,
-        p -> p.mapColor(MapColor.COLOR_ORANGE).strength(2.0f).sound(SoundType.STONE)
+        p -> p.mapColor(MapColor.COLOR_ORANGE).strength(2.0f).sound(SoundType.STONE).noOcclusion()
+            .isViewBlocking((state, level, pos) -> false).isSuffocating((state, level, pos) -> false).isRedstoneConductor((state, level, pos) -> false)
             .lightLevel(state -> state.getValue(MysticBrazierBlock.LIT) ? 14 : 0)
     );
     public static final DeferredItem<BlockItem> MYSTIC_BRAZIER_ITEM = ITEMS.registerSimpleBlockItem("mystic_brazier", MYSTIC_BRAZIER_BLOCK);
@@ -396,6 +399,27 @@ public class don {
         );
 
         registrar.playToServer(
+            RefuseDealPayload.TYPE,
+            RefuseDealPayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.player() instanceof ServerPlayer player && player.level() instanceof ServerLevel serverLevel) {
+                    var server = serverLevel.getServer();
+                    player.connection.disconnect(net.minecraft.network.chat.Component.literal("you were deemed unworthy to save Nayir"));
+                    if (server.isDedicatedServer()) return;
+
+                    var worldPath = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
+                        .toAbsolutePath().normalize();
+                    pendingWorldDeletion = worldPath;
+
+                    server.execute(() -> {
+                        for (var lvl : server.getAllLevels()) lvl.noSave = true;
+                        server.halt(false);
+                    });
+                }
+            }
+        );
+
+        registrar.playToServer(
             DialogueCompletePayload.TYPE,
             DialogueCompletePayload.STREAM_CODEC,
             (payload, context) -> {
@@ -467,5 +491,50 @@ public class don {
             }
             JournalEntryManager.syncToPlayer(player);
         }
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) {
+        var path = pendingWorldDeletion;
+        if (path == null) return;
+        pendingWorldDeletion = null;
+        deleteWorldFolder(path);
+    }
+
+    private static void deleteWorldFolder(java.nio.file.Path root) {
+        if (tryDeleteTree(root, 5)) {
+            LOGGER.warn("World folder deleted after refusing Brightest's deal: {}", root);
+            return;
+        }
+        try {
+            String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
+            ProcessBuilder pb = os.contains("win")
+                ? new ProcessBuilder("cmd", "/c", "ping 127.0.0.1 -n 4 > nul & rmdir /s /q \"" + root + "\"")
+                : new ProcessBuilder("sh", "-c", "sleep 3; rm -rf '" + root + "'");
+            pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+            pb.redirectError(ProcessBuilder.Redirect.DISCARD);
+            pb.start();
+            LOGGER.warn("World folder not fully gone yet, handed off to fallback process: {}", root);
+        } catch (Exception e) {
+            LOGGER.error("Fallback world-delete process failed to start for {}", root, e);
+        }
+    }
+
+    private static boolean tryDeleteTree(java.nio.file.Path root, int attempts) {
+        for (int attempt = 0; attempt < attempts; attempt++) {
+            if (!java.nio.file.Files.exists(root)) return true;
+            try (var walk = java.nio.file.Files.walk(root)) {
+                walk.sorted(java.util.Comparator.comparingInt((java.nio.file.Path p) -> p.getNameCount()).reversed())
+                    .forEach(p -> {
+                        try {
+                            p.toFile().setWritable(true);
+                            java.nio.file.Files.deleteIfExists(p);
+                        } catch (Exception ignored) {}
+                    });
+            } catch (Exception ignored) {}
+            if (!java.nio.file.Files.exists(root)) return true;
+            try { Thread.sleep(150); } catch (InterruptedException ignored) {}
+        }
+        return !java.nio.file.Files.exists(root);
     }
 }

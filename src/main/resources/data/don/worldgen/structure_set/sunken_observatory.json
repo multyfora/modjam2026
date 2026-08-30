@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 32,
+    "separation": 16,
+    "salt": 1424247421
+  },
+  "structures": [
+    {
+      "structure": "don:sunken_observatory",
+      "weight": 1
+    }
+  ]
+}

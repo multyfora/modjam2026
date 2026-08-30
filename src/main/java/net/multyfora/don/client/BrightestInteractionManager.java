@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.multyfora.don.network.AcceptDealPayload;
+import net.multyfora.don.network.RefuseDealPayload;
 import net.multyfora.don.client.cutscene.CutsceneClientController;
 import net.multyfora.don.client.dialogue.RichText;
 
@@ -271,6 +272,10 @@ public class BrightestInteractionManager {
             startDialogue();
         } else {
             getInstance().cooldown = REFUSE_COOLDOWN;
+            var connection = mc.getConnection();
+            if (connection != null) {
+                connection.send(RefuseDealPayload.INSTANCE.toVanillaServerbound());
+            }
         }
     }
 
