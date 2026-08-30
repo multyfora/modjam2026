@@ -19,6 +19,18 @@ public class SoulLightBlockEntity extends BlockEntity {
         super(don.SOUL_LIGHT_BLOCK_ENTITY.get(), pos, state);
     }
 
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level != null) {
+            var state = level.getBlockState(worldPosition);
+            var block = state.getBlock();
+            if (block != net.minecraft.world.level.block.Blocks.SOUL_LANTERN && block != net.minecraft.world.level.block.Blocks.SOUL_TORCH && block != net.minecraft.world.level.block.Blocks.SOUL_CAMPFIRE && block != net.minecraft.world.level.block.Blocks.SOUL_WALL_TORCH) {
+                level.removeBlockEntity(worldPosition);
+            }
+        }
+    }
+
     public int getCharges() {
         return charges;
     }

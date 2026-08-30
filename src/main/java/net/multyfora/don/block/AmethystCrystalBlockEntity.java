@@ -17,6 +17,14 @@ public class AmethystCrystalBlockEntity extends BlockEntity {
         super(don.AMETHYST_CRYSTAL_BLOCK_ENTITY.get(), pos, state);
     }
 
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level != null && !level.getBlockState(worldPosition).is(net.minecraft.world.level.block.Blocks.AMETHYST_CLUSTER)) {
+            level.removeBlockEntity(worldPosition);
+        }
+    }
+
     public int getCharges() {
         return charges;
     }

@@ -152,14 +152,14 @@ public class don {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AmethystCrystalBlockEntity>> AMETHYST_CRYSTAL_BLOCK_ENTITY =
         BLOCK_ENTITY_TYPES.register(
             "amethyst_crystal",
-            () -> new BlockEntityType<>(AmethystCrystalBlockEntity::new, Set.of(Blocks.AMETHYST_CLUSTER))
+            () -> new BlockEntityType<>(AmethystCrystalBlockEntity::new, Set.of(Blocks.AMETHYST_CLUSTER, Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD))
         );
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SoulLightBlockEntity>> SOUL_LIGHT_BLOCK_ENTITY =
         BLOCK_ENTITY_TYPES.register(
             "soul_light",
             () -> new BlockEntityType<>(SoulLightBlockEntity::new,
-                Set.of(Blocks.SOUL_LANTERN, Blocks.SOUL_TORCH, Blocks.SOUL_CAMPFIRE))
+                Set.of(Blocks.SOUL_LANTERN, Blocks.SOUL_TORCH, Blocks.SOUL_WALL_TORCH, Blocks.SOUL_CAMPFIRE, Blocks.LANTERN, Blocks.TORCH, Blocks.WALL_TORCH, Blocks.CAMPFIRE))
         );
 
     public static final DeferredBlock<SingularityCrystalBlock> SINGULARITY_CRYSTAL_BLOCK = BLOCKS.registerBlock(

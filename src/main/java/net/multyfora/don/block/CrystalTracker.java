@@ -1,10 +1,6 @@
 package net.multyfora.don.block;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.extract.LevelExtractor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -127,14 +123,9 @@ public final class CrystalTracker {
     }
 
     private static void markSectionsDirty(Level level, BlockPos pos) {
-        if (!(level instanceof ClientLevel)) return;
-        Minecraft mc = Minecraft.getInstance();
-        LevelExtractor extractor = mc.levelExtractor;
-        if (extractor == null) return;
-        extractor.setSectionDirtyWithNeighbors(
-            SectionPos.blockToSectionCoord(pos.getX()),
-            SectionPos.blockToSectionCoord(pos.getY()),
-            SectionPos.blockToSectionCoord(pos.getZ())
-        );
+        if (!level.isClientSide()) return;
+        try {
+            Class.forName("net.multyfora.don.client.CrystalTrackerClient").getMethod("markDirty", Level.class, BlockPos.class).invoke(null, level, pos);
+        } catch (Exception ignored) {}
     }
 }

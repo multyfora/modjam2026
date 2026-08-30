@@ -6,7 +6,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.multyfora.don.client.JournalGui;
 
 public class JournalItem extends Item {
     public JournalItem(Properties properties) {
@@ -16,7 +15,9 @@ public class JournalItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (level.isClientSide()) {
-            JournalGui.open(player.getItemInHand(hand));
+            try {
+                Class.forName("net.multyfora.don.client.ClientHooks").getMethod("openJournal", ItemStack.class).invoke(null, player.getItemInHand(hand));
+            } catch (Exception ignored) {}
         }
         return InteractionResult.SUCCESS;
     }

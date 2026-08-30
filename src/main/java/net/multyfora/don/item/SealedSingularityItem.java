@@ -8,7 +8,6 @@ import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.constant.dataticket.DataTicket;
-import com.geckolib.renderer.GeoItemRenderer;
 import com.geckolib.util.GeckoLibUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,7 +37,6 @@ import net.minecraft.world.phys.HitResult;
 import net.multyfora.don.block.AmethystCrystalBlockEntity;
 import net.multyfora.don.block.MysticBrazierBlockEntity;
 import net.multyfora.don.block.SoulLightBlockEntity;
-import net.multyfora.don.client.renderer.SealedSingularityRenderer;
 import net.multyfora.don.don;
 
 import java.util.function.Consumer;
@@ -108,17 +106,11 @@ public class SealedSingularityItem extends Item implements GeoItem {
 
     @Override
     public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
-        consumer.accept(new GeoRenderProvider() {
-            private SealedSingularityRenderer renderer;
-
-            @Override
-            public GeoItemRenderer<?> getGeoItemRenderer() {
-                if (this.renderer == null) {
-                    this.renderer = new SealedSingularityRenderer();
-                }
-                return this.renderer;
-            }
-        });
+        if (net.neoforged.fml.loading.FMLEnvironment.getDist().isClient()) {
+            try {
+                Class.forName("net.multyfora.don.client.SealedSingularityClientHelper").getMethod("createRenderer", Consumer.class).invoke(null, consumer);
+            } catch (Exception ignored) {}
+        }
     }
 
     public static int getCharges(ItemStack stack) {
