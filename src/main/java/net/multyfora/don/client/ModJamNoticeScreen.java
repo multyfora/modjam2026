@@ -47,8 +47,10 @@ public final class ModJamNoticeScreen {
             "and the story is not fully complete. Please",
             "expect bugs and inconsistencies.",
             "",
-            "This is my first ModJam, so thank you",
-            "for your patience and understanding."
+            "I am very excited to present",
+            "my first entry in this ModJam!",
+            "There is still much more to come",
+            "so please look forward to future releases."
     );
 
 
