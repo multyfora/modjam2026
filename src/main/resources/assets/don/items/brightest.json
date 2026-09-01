@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "don:item/brightest"
+    "type": "minecraft:special",
+    "base": "don:item/brightest",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
   }
 }

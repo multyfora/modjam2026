@@ -20,13 +20,34 @@ public class PortableStarBlock extends Block implements EntityBlock {
     @Override
     protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hitResult) {
         if (player.isShiftKeyDown()) return net.minecraft.world.InteractionResult.PASS;
+        if (level.isClientSide() && isLabStar(level, pos)) {
+            try {
+                Class.forName("net.multyfora.don.client.SealedSunChoiceGui").getMethod("open", BlockPos.class).invoke(null, pos);
+            } catch (Exception ignored) {}
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
         return net.minecraft.world.InteractionResult.SUCCESS;
     }
 
     @Override
     protected net.minecraft.world.InteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hitResult) {
         if (player.isShiftKeyDown()) return net.minecraft.world.InteractionResult.PASS;
+        if (level.isClientSide() && isLabStar(level, pos)) {
+            try {
+                Class.forName("net.multyfora.don.client.SealedSunChoiceGui").getMethod("open", BlockPos.class).invoke(null, pos);
+            } catch (Exception ignored) {}
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
         return net.minecraft.world.InteractionResult.SUCCESS;
+    }
+
+    private static boolean isLabStar(net.minecraft.world.level.Level level, BlockPos pos) {
+        if (!level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.GOLD_BLOCK)) return false;
+        var tinted = net.minecraft.world.level.block.Blocks.TINTED_GLASS;
+        return level.getBlockState(pos.north()).is(tinted)
+            && level.getBlockState(pos.south()).is(tinted)
+            && level.getBlockState(pos.east()).is(tinted)
+            && level.getBlockState(pos.west()).is(tinted);
     }
 
     @Override

@@ -30,11 +30,29 @@ public class ClientEvents {
         if (event.getEntity().isShiftKeyDown()) return;
         var pos = event.getPos();
         if (event.getLevel().getBlockState(pos).is(don.PORTABLE_STAR_BLOCK.get())) {
+            if (BetrayedClientState.isBetrayed()) {
+                event.setCanceled(true);
+                return;
+            }
+            if (isLabStar(event.getLevel(), pos)) {
+                SealedSunChoiceGui.open(pos);
+                event.setCanceled(true);
+                return;
+            }
             if (event.getLevel().getBlockEntity(pos) instanceof PortableStarBlockEntity star) {
                 PortableStarGui.open(pos, star.getMystical());
             }
             event.setCanceled(true);
         }
+    }
+
+    private static boolean isLabStar(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (!level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.GOLD_BLOCK)) return false;
+        var tinted = net.minecraft.world.level.block.Blocks.TINTED_GLASS;
+        return level.getBlockState(pos.north()).is(tinted)
+            && level.getBlockState(pos.south()).is(tinted)
+            && level.getBlockState(pos.east()).is(tinted)
+            && level.getBlockState(pos.west()).is(tinted);
     }
 
     @SubscribeEvent
@@ -46,6 +64,7 @@ public class ClientEvents {
         FirstContactTransitionState.getInstance().tick();
         BrightestInteractionManager.getInstance().tick();
         FirstContactMusicManager.getInstance().tick();
+        LabMusicManager.getInstance().tick();
         SingularityDarknessManager.getInstance().tick();
         CutsceneClientController.getInstance().tick();
         MonocleHud.getInstance().tick();

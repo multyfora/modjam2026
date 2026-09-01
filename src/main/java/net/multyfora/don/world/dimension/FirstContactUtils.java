@@ -30,14 +30,15 @@ public class FirstContactUtils {
         var targetLevel = server.getLevel(ModDimensions.FIRST_CONTACT_LEVEL_KEY);
         if (targetLevel == null) return;
 
-        var targetPos = new BlockPos(0, 2, 0);
+        var structureCenter = new BlockPos(0, 2, 0);
+        var spawnPos = new BlockPos(0, 2, -50);
 
-        FirstContactStructureFeature.placeAtSpawn(targetLevel, targetPos);
-        FirstContactStructureFeature.relightArea(targetLevel, targetPos.getX(), targetPos.getZ());
+        FirstContactStructureFeature.placeAtSpawn(targetLevel, structureCenter);
+        FirstContactStructureFeature.relightArea(targetLevel, structureCenter.getX(), structureCenter.getZ());
 
-        teleportPlayer(player, targetLevel, targetPos);
+        teleportPlayer(player, targetLevel, spawnPos);
         ensureBrightest(targetLevel, player);
-        setRespawn(player, ModDimensions.FIRST_CONTACT_LEVEL_KEY, targetPos);
+        setRespawn(player, ModDimensions.FIRST_CONTACT_LEVEL_KEY, spawnPos);
         player.getPersistentData().putBoolean(ENTERED_TAG.toString(), true);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
             SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
@@ -46,6 +47,13 @@ public class FirstContactUtils {
     }
 
     public static void ensureBrightest(ServerLevel level, ServerPlayer player) {
+        if (don.hasBetrayed(player)) {
+            for (var e : level.getEntities(EntityTypeTest.forClass(BrightestEntity.class), player.getBoundingBox().inflate(64.0), e2 -> true)) {
+                e.discard();
+            }
+            return;
+        }
+        FirstContactStructureFeature.fillLightAroundBrightest(level, BRIGHTEST_POS);
         if (!level.getEntities(EntityTypeTest.forClass(BrightestEntity.class),
             player.getBoundingBox().inflate(16.0), entity -> true).isEmpty()) {
             return;

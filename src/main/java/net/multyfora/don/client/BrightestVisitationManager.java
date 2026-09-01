@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.multyfora.don.don;
 
@@ -20,19 +21,19 @@ public class BrightestVisitationManager {
     private static final float MOVE_DURATION = 22f;
     private static final float APPEAR_DURATION = 10f;
     private static final float LEAVE_DURATION = 24f;
-    private static final Vec3 LEAVE_TARGET = new Vec3(0.0, -2.6, -6.5);
+    private static final Vec3 LEAVE_TARGET = new Vec3(0.0, -2.6, -8.5);
 
     private static final List<Vec3> ANCHORS = List.of(
-        new Vec3(1.6, -0.1, -2.0),
-        new Vec3(0.3, 0.8, -3.3),
-        new Vec3(-1.5, -0.2, -2.2),
-        new Vec3(0.0, -0.5, -3.3),
-        new Vec3(1.3, 0.5, -3.0),
-        new Vec3(-0.9, 0.3, -2.3),
-        new Vec3(0.8, -0.1, -1.6),
-        new Vec3(-1.6, 0.7, -3.1),
-        new Vec3(0.5, 0.9, -2.7),
-        new Vec3(-0.3, -0.2, -1.9)
+        new Vec3(1.6, -0.1, -2.7),
+        new Vec3(0.3, 0.8, -4.4),
+        new Vec3(-1.5, -0.2, -2.9),
+        new Vec3(0.0, -0.5, -4.4),
+        new Vec3(1.3, 0.5, -4.0),
+        new Vec3(-0.9, 0.3, -3.1),
+        new Vec3(0.8, -0.1, -2.16),
+        new Vec3(-1.6, 0.7, -4.15),
+        new Vec3(0.5, 0.9, -3.6),
+        new Vec3(-0.3, -0.2, -2.55)
     );
 
     private boolean active;
@@ -47,12 +48,14 @@ public class BrightestVisitationManager {
     private float leaveTicks;
     private Vec3 leaveFrom = Vec3.ZERO;
     private float leaveFromScale = 1f;
+    private ItemStack cachedStack;
 
     public static BrightestVisitationManager getInstance() {
         return INSTANCE;
     }
 
     public void start(int lineCount) {
+        if (BetrayedClientState.isBetrayed()) return;
         List<Vec3> shuffled = new ArrayList<>(ANCHORS);
         Collections.shuffle(shuffled);
         route = List.copyOf(shuffled);
@@ -65,6 +68,7 @@ public class BrightestVisitationManager {
         elapsedTicks = 0;
         leaving = false;
         leaveTicks = 0f;
+        cachedStack = don.BRIGHTEST.get().getDefaultInstance();
     }
 
     public void end() {
@@ -162,9 +166,10 @@ public class BrightestVisitationManager {
 
     private void renderBrightest(GameRenderer gameRenderer, SubmitNodeCollector submitNodeCollector, PoseStack poseStack) {
         Minecraft mc = Minecraft.getInstance();
+        if (cachedStack == null) cachedStack = don.BRIGHTEST.get().getDefaultInstance();
         gameRenderer.itemInHandRenderer.renderItem(
             mc.player,
-            don.BRIGHTEST.get().getDefaultInstance(),
+            cachedStack,
             ItemDisplayContext.NONE,
             poseStack,
             submitNodeCollector,

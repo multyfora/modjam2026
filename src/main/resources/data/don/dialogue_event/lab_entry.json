@@ -1,0 +1,18 @@
+{
+  "triggers": [
+    {
+      "type": "don:at_structure",
+      "tag": "don:lab"
+    }
+  ],
+  "lines": [
+    "no way, you actually did it, you got here!",
+    "this lab is the reason for all of our agony.",
+    "the brightest minds on Nayir were creating a power source capable of powering the whole civilization for aeons here",
+    "but something went wrong...",
+    "you need to find the sealed star and provide its power to me",
+    "with it i will be able to turn back time and save my people",
+    "your journey will end there."
+  ],
+  "once": true
+}

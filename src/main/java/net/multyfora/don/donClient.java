@@ -41,14 +41,19 @@ import net.multyfora.don.client.renderer.PortableStarRenderer;
 import net.multyfora.don.client.renderer.WallWritingRenderer;
 import net.multyfora.don.client.renderer.WeaverGlyphRenderer;
 import net.multyfora.don.network.WallWritingReadPayload;
+import net.multyfora.don.client.BetrayedClientState;
+import net.multyfora.don.client.BrightestVisitationManager;
 import net.multyfora.don.client.ClientJournalState;
+import net.multyfora.don.network.BetrayedPayload;
 import net.multyfora.don.network.DialogueEventStartPayload;
 import net.multyfora.don.network.FirstContactEnterPayload;
 import net.multyfora.don.network.FirstContactLeavePayload;
 import net.multyfora.don.network.JournalSyncPayload;
+import net.multyfora.don.network.LabMusicPayload;
 import net.multyfora.don.network.LightBeamPayload;
 import net.multyfora.don.network.OpenBrightestMenuPayload;
 import net.multyfora.don.network.StartCutscenePayload;
+import net.multyfora.don.client.LabMusicManager;
 import net.multyfora.don.client.cutscene.CutsceneClientController;
 
 @Mod(value = don.MODID, dist = Dist.CLIENT)
@@ -134,6 +139,16 @@ public class donClient {
             (payload, context) -> ClientJournalState.getInstance().handle(payload));
         event.register(WallWritingReadPayload.TYPE,
             (payload, context) -> DialogueSystem.getInstance().playMarkup(java.util.List.of(payload.plain()), null));
+        event.register(LabMusicPayload.TYPE,
+            (payload, context) -> LabMusicManager.getInstance().handlePayload(payload.play()));
+        event.register(BetrayedPayload.TYPE,
+            (payload, context) -> {
+                BetrayedClientState.setBetrayed(true);
+                LabMusicManager.getInstance().handlePayload(false);
+                DialogueEventClientHandler.getInstance().clear();
+                DialogueSystem.getInstance().clear();
+                BrightestVisitationManager.getInstance().end();
+            });
     }
 
     private static void onScreenOpen(ScreenEvent.Opening event) {

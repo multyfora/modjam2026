@@ -6,9 +6,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.phys.Vec3;
 import net.multyfora.don.don;
 
 public class FirstContactStructureFeature {
@@ -19,14 +21,36 @@ public class FirstContactStructureFeature {
     private static final int HALF_FLOOR_Z = 208 / 2 + EDGE_PADDING;
 
     public static void placeAtSpawn(ServerLevel level, BlockPos center) {
-        if (isAlreadyPlaced(level, center)) return;
+        if (isAlreadyPlaced(level, center)) {
+            fillLightAroundBrightest(level, new Vec3(0.5, 8.0, 19.5));
+            return;
+        }
 
         int ox = center.getX();
         int oz = center.getZ();
 
         buildSafetyFloor(level, ox, oz);
         placeGraveyardTemplate(level, ox, oz);
+        fillLightAroundBrightest(level, new Vec3(0.5, 8.0, 19.5));
         relightArea(level, ox, oz);
+    }
+
+    public static void fillLightAroundBrightest(ServerLevel level, Vec3 pos) {
+        var lightState = Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, 15);
+        BlockPos center = BlockPos.containing(pos);
+        int radius = 5;
+        int rsq = radius * radius;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (dx * dx + dy * dy + dz * dz > rsq) continue;
+                    BlockPos p = center.offset(dx, dy, dz);
+                    if (level.getBlockState(p).isAir()) {
+                        level.setBlock(p, lightState, 3);
+                    }
+                }
+            }
+        }
     }
 
     public static void relightArea(ServerLevel level, int ox, int oz) {

@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 64,
+    "separation": 32,
+    "salt": 2050601432
+  },
+  "structures": [
+    {
+      "structure": "don:lab",
+      "weight": 1
+    }
+  ]
+}

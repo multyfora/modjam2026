@@ -91,25 +91,36 @@ import net.multyfora.don.network.FirstContactLeavePayload;
 import net.multyfora.don.network.FirstContactTogglePayload;
 import net.multyfora.don.network.JournalOpenPayload;
 import net.multyfora.don.network.JournalSyncPayload;
+import net.multyfora.don.network.BetrayedPayload;
+import net.multyfora.don.network.LabMusicPayload;
 import net.multyfora.don.network.LightBeamPayload;
 import net.multyfora.don.network.OpenBrightestMenuPayload;
 import net.multyfora.don.network.RefuseDealPayload;
 import net.multyfora.don.network.SavePaperPatternPayload;
+import net.multyfora.don.network.SealedSunChoicePayload;
 import net.multyfora.don.network.SetStarMysticalPayload;
 import net.multyfora.don.network.StartCutscenePayload;
 import net.multyfora.don.network.WallWritingReadPayload;
 import net.multyfora.don.world.dimension.FirstContactLeaveFlow;
 import net.multyfora.don.world.dimension.FirstContactUtils;
 import net.multyfora.don.world.dimension.ModDimensions;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Mod(don.MODID)
 public class don {
     public static final String MODID = "don";
     public static final Logger LOGGER = LogUtils.getLogger();
     private static volatile java.nio.file.Path pendingWorldDeletion = null;
+    private static final Map<UUID, Boolean> labMusicState = new HashMap<>();
+    public static final String BETRAYED_TAG = "don:betrayed_brightest";
+    private static final Map<UUID, Long> pendingHeroDeletion = new HashMap<>();
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
@@ -382,6 +393,49 @@ public class don {
             WallWritingReadPayload.STREAM_CODEC
         );
 
+        registrar.playToClient(
+            LabMusicPayload.TYPE,
+            LabMusicPayload.STREAM_CODEC
+        );
+
+        registrar.playToClient(
+            BetrayedPayload.TYPE,
+            BetrayedPayload.STREAM_CODEC
+        );
+
+        registrar.playToServer(
+            SealedSunChoicePayload.TYPE,
+            SealedSunChoicePayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.player() instanceof ServerPlayer player
+                    && player.level() instanceof ServerLevel level) {
+                    if (hasBetrayed(player)) return;
+                    BlockPos pos = payload.pos();
+                    if (pos.distToCenterSqr(player.position()) > 36.0) return;
+                    if (!level.getBlockState(pos).is(PORTABLE_STAR_BLOCK.get())) return;
+                    if (!isPlayerInLab(player)) return;
+                    if (!level.getBlockState(pos.below()).is(Blocks.GOLD_BLOCK)) return;
+                    var tinted = Blocks.TINTED_GLASS;
+                    if (!(level.getBlockState(pos.north()).is(tinted) && level.getBlockState(pos.south()).is(tinted) && level.getBlockState(pos.east()).is(tinted) && level.getBlockState(pos.west()).is(tinted))) return;
+                    if (payload.help()) {
+                        PacketDistributor.sendToPlayer(player, new DialogueEventStartPayload(java.util.List.of("thank you, friend...")));
+                        pendingHeroDeletion.put(player.getUUID(), level.getGameTime() + 60);
+                    } else {
+                        PacketDistributor.sendToPlayer(player, new DialogueEventStartPayload(java.util.List.of("huh... what?")));
+                        setBetrayed(player);
+                        PacketDistributor.sendToPlayer(player, new BetrayedPayload());
+                        PacketDistributor.sendToPlayer(player, new LabMusicPayload(false));
+                        for (ServerLevel lvl : level.getServer().getAllLevels()) {
+                            for (var e : lvl.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(BrightestEntity.class), e2 -> true)) {
+                                e.discard();
+                            }
+                        }
+                        labMusicState.put(player.getUUID(), false);
+                    }
+                }
+            }
+        );
+
         registrar.playToServer(
             JournalOpenPayload.TYPE,
             JournalOpenPayload.STREAM_CODEC,
@@ -504,6 +558,66 @@ public class don {
         for (ServerLevel level : event.getServer().getAllLevels()) {
             LightWeaverSpawner.onServerTick(level);
         }
+        for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
+            boolean inLab = isPlayerInLab(player);
+            Boolean prev = labMusicState.get(player.getUUID());
+            if (prev == null || prev != inLab) {
+                labMusicState.put(player.getUUID(), inLab);
+                PacketDistributor.sendToPlayer(player, new LabMusicPayload(inLab));
+            }
+        }
+        if (!pendingHeroDeletion.isEmpty()) {
+            long now = event.getServer().overworld().getGameTime();
+            Iterator<Map.Entry<UUID, Long>> it = pendingHeroDeletion.entrySet().iterator();
+            while (it.hasNext()) {
+                var entry = it.next();
+                if (now >= entry.getValue()) {
+                    it.remove();
+                    var player = event.getServer().getPlayerList().getPlayer(entry.getKey());
+                    if (player != null) {
+                        var server = event.getServer();
+                        if (server.isDedicatedServer()) {
+                            try {
+                                var bans = server.getPlayerList().getBans();
+                                var nameAndId = new net.minecraft.server.players.NameAndId(player.getUUID(), player.getName().getString());
+                                bans.add(new net.minecraft.server.players.UserBanListEntry(nameAndId, null, "You are a hero", null, null));
+                                player.connection.disconnect(Component.literal("You are a hero"));
+                            } catch (Exception e) {
+                                player.connection.disconnect(Component.literal("You are a hero"));
+                            }
+                        } else {
+                            player.connection.disconnect(Component.literal("You are a hero"));
+                            var worldPath = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize();
+                            pendingWorldDeletion = worldPath;
+                            server.execute(() -> {
+                                for (var lvl : server.getAllLevels()) lvl.noSave = true;
+                                server.halt(false);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isPlayerInLab(ServerPlayer player) {
+        if (hasBetrayed(player)) return false;
+        if (!(player.level() instanceof ServerLevel level)) return false;
+        try {
+            var tag = net.minecraft.tags.TagKey.create(Registries.STRUCTURE, Identifier.fromNamespaceAndPath(MODID, "lab"));
+            var start = level.structureManager().getStructureWithPieceAt(player.blockPosition(), tag);
+            return start != net.minecraft.world.level.levelgen.structure.StructureStart.INVALID_START;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static boolean hasBetrayed(ServerPlayer player) {
+        return player.getPersistentData().getBoolean(BETRAYED_TAG).orElse(false);
+    }
+
+    public static void setBetrayed(ServerPlayer player) {
+        player.getPersistentData().putBoolean(BETRAYED_TAG, true);
     }
 
     @SubscribeEvent
@@ -515,6 +629,10 @@ public class don {
                 FirstContactUtils.ensureBrightest((ServerLevel) player.level(), player);
             }
             JournalEntryManager.syncToPlayer(player);
+            if (hasBetrayed(player)) {
+                PacketDistributor.sendToPlayer(player, new BetrayedPayload());
+                PacketDistributor.sendToPlayer(player, new LabMusicPayload(false));
+            }
         }
     }
 
@@ -530,6 +648,9 @@ public class don {
         copyPersistentCompound(oldData, newData, "don_journal_times");
         copyPersistentBoolean(oldData, newData, "don:entered_first_contact");
         copyPersistentBoolean(oldData, newData, "don:accepted_deal");
+        copyPersistentBoolean(oldData, newData, BETRAYED_TAG);
+        labMusicState.remove(event.getEntity().getUUID());
+        labMusicState.remove(event.getOriginal().getUUID());
     }
 
     private static void copyPersistentList(net.minecraft.nbt.CompoundTag oldData, net.minecraft.nbt.CompoundTag newData, String key) {

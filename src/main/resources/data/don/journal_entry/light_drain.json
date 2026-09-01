@@ -1,5 +1,5 @@
 {
-  "image": "don:textures/gui/journal/light_drain.png",
+  "image": "",
   "description": "journal.don.light_drain",
   "descriptionIsKey": true,
   "triggers": [

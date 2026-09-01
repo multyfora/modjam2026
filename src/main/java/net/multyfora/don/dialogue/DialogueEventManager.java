@@ -94,6 +94,7 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
     }
 
     private void checkPlayer(ServerPlayer player) {
+        if (don.hasBetrayed(player)) return;
         for (Map.Entry<Identifier, DialogueEventDefinition> entry : definitions.entrySet()) {
             DialogueEventDefinition definition = entry.getValue();
             if (definition.once() && isFired(player, entry.getKey())) continue;

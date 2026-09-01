@@ -18,11 +18,17 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.multyfora.don.network.OpenBrightestMenuPayload;
 import net.neoforged.neoforge.network.PacketDistributor;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.InstancedAnimatableInstanceCache;
+import com.geckolib.animatable.stateless.StatelessGeoEntity;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.manager.AnimatableManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BrightestEntity extends Entity {
+public class BrightestEntity extends Entity implements StatelessGeoEntity {
 
     public static final float MODEL_HEIGHT = 1.2f;
     public static final float FLOAT_HEIGHT = 0.6f;
@@ -34,10 +40,21 @@ public class BrightestEntity extends Entity {
     private final List<BlockPos> litPositions = new ArrayList<>();
     private BlockPos lastLightPos;
     private int lightTimer;
+    private final AnimatableInstanceCache animCache = new InstancedAnimatableInstanceCache(this);
 
     public BrightestEntity(EntityType<? extends BrightestEntity> type, Level level) {
         super(type, level);
         setNoGravity(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>("main", state -> state.setAndContinue(RawAnimation.begin().thenLoop("idle"))));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return animCache;
     }
 
     @Override
