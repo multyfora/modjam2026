@@ -58,6 +58,7 @@ import net.multyfora.don.light.LightEnergyManager;
 import net.multyfora.don.lightweaver.CheatSheetUI;
 import net.multyfora.don.lightweaver.LightBeamDestructionManager;
 import net.multyfora.don.lightweaver.LightWeaverShapes;
+import net.multyfora.don.lightweaver.LightWeaverSpawner;
 import net.multyfora.don.lightweaver.WeaverPaper;
 import net.multyfora.don.world.entity.BrightestEntity;
 import net.multyfora.don.world.entity.LightWeaverEntity;
@@ -266,8 +267,25 @@ public class don {
             .build(ResourceKey.create(Registries.ENTITY_TYPE,
                 Identifier.fromNamespaceAndPath(MODID, "wall_writing"))));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<net.multyfora.don.world.entity.DisplayBlockEntity>> DISPLAY_BLOCK_ENTITY =
+        ENTITY_TYPES.register("display_block", () -> EntityType.Builder.of(net.multyfora.don.world.entity.DisplayBlockEntity::new, MobCategory.MISC)
+            .sized(1.0f, 1.0f)
+            .setUpdateInterval(10)
+            .build(ResourceKey.create(Registries.ENTITY_TYPE,
+                Identifier.fromNamespaceAndPath(MODID, "display_block"))));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<net.multyfora.don.world.entity.WeaverGlyphEntity>> WEAVER_GLYPH_ENTITY =
+        ENTITY_TYPES.register("weaver_glyph", () -> EntityType.Builder.of(net.multyfora.don.world.entity.WeaverGlyphEntity::new, MobCategory.MISC)
+            .sized(0.7f, 0.7f)
+            .setUpdateInterval(10)
+            .build(ResourceKey.create(Registries.ENTITY_TYPE,
+                Identifier.fromNamespaceAndPath(MODID, "weaver_glyph"))));
+
     public static final DeferredItem<Item> WALL_WRITING_ITEM = ITEMS.registerItem("wall_writing",
         properties -> new WallWritingItem(properties.stacksTo(1)));
+
+    public static final DeferredItem<Item> WEAVER_GLYPH_ITEM = ITEMS.registerItem("weaver_glyph",
+        properties -> new net.multyfora.don.item.WeaverGlyphItem(properties.stacksTo(16)));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.don"))
@@ -482,6 +500,13 @@ public class don {
     }
 
     @SubscribeEvent
+    public void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            LightWeaverSpawner.onServerTick(level);
+        }
+    }
+
+    @SubscribeEvent
     public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (!FirstContactUtils.hasEnteredFirstContact(player)) {
@@ -490,6 +515,34 @@ public class don {
                 FirstContactUtils.ensureBrightest((ServerLevel) player.level(), player);
             }
             JournalEntryManager.syncToPlayer(player);
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerClone(net.neoforged.neoforge.event.entity.player.PlayerEvent.Clone event) {
+        if (!event.isWasDeath()) return;
+        var oldData = event.getOriginal().getPersistentData();
+        var newData = event.getEntity().getPersistentData();
+        copyPersistentList(oldData, newData, "don_dialogue_events");
+        copyPersistentCompound(oldData, newData, "don_dialogue_times");
+        copyPersistentList(oldData, newData, "don_cutscenes");
+        copyPersistentList(oldData, newData, "don_journal_entries");
+        copyPersistentCompound(oldData, newData, "don_journal_times");
+        copyPersistentBoolean(oldData, newData, "don:entered_first_contact");
+        copyPersistentBoolean(oldData, newData, "don:accepted_deal");
+    }
+
+    private static void copyPersistentList(net.minecraft.nbt.CompoundTag oldData, net.minecraft.nbt.CompoundTag newData, String key) {
+        oldData.getList(key).ifPresent(list -> newData.put(key, list.copy()));
+    }
+
+    private static void copyPersistentCompound(net.minecraft.nbt.CompoundTag oldData, net.minecraft.nbt.CompoundTag newData, String key) {
+        oldData.getCompound(key).ifPresent(compound -> newData.put(key, compound.copy()));
+    }
+
+    private static void copyPersistentBoolean(net.minecraft.nbt.CompoundTag oldData, net.minecraft.nbt.CompoundTag newData, String key) {
+        if (oldData.contains(key)) {
+            oldData.getBoolean(key).ifPresent(value -> newData.putBoolean(key, value));
         }
     }
 

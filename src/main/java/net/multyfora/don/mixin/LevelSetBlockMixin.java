@@ -4,6 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.multyfora.don.block.CrystalTracker;
+import net.multyfora.don.block.MysticBrazierBlock;
+import net.multyfora.don.lightweaver.LightWeaverSpawner;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,7 +32,12 @@ public abstract class LevelSetBlockMixin {
             don$previousStates.remove();
         }
         if (cir.getReturnValueZ() && previous != null) {
-            CrystalTracker.notifyBlockChanged((Level) (Object) this, pos, previous, blockState);
+            Level level = (Level) (Object) this;
+            CrystalTracker.notifyBlockChanged(level, pos, previous, blockState);
+            if (previous.hasProperty(MysticBrazierBlock.LIT) && blockState.hasProperty(MysticBrazierBlock.LIT)
+                    && previous.getValue(MysticBrazierBlock.LIT) != blockState.getValue(MysticBrazierBlock.LIT)) {
+                LightWeaverSpawner.onBrazierLitChanged(level, pos);
+            }
         }
     }
 }

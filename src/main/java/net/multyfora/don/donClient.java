@@ -2,6 +2,7 @@ package net.multyfora.don;
 
 import com.lowdragmc.lowdraglib2.gui.hud.ModularHudLayer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.PlayerModelType;
@@ -15,25 +16,30 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;
+import net.neoforged.neoforge.common.NeoForge;
 import net.multyfora.don.client.BrightestInteractionManager;
 import net.multyfora.don.client.DialogueEventClientHandler;
 import net.multyfora.don.client.DialogueSystem;
 import net.multyfora.don.client.FirstContactOverlay;
 import net.multyfora.don.client.LightDrainClientHandler;
+import net.multyfora.don.client.ModJamNoticeScreen;
 import net.multyfora.don.client.MonocleHud;
 import net.multyfora.don.client.FirstContactTransitionState;
 import net.multyfora.don.client.ShotBeamImpactOverlay;
 import net.multyfora.don.client.ShotBeamRenderer;
 import net.multyfora.don.client.model.MonocleWornLayer;
 import net.multyfora.don.client.renderer.BrightestEntityRenderer;
+import net.multyfora.don.client.renderer.DisplayBlockRenderer;
 import net.multyfora.don.client.renderer.LightWeaverRenderer;
 import net.multyfora.don.client.renderer.MysticBrazierRenderer;
 import net.multyfora.don.client.renderer.PortableStarRenderer;
 import net.multyfora.don.client.renderer.WallWritingRenderer;
+import net.multyfora.don.client.renderer.WeaverGlyphRenderer;
 import net.multyfora.don.network.WallWritingReadPayload;
 import net.multyfora.don.client.ClientJournalState;
 import net.multyfora.don.network.DialogueEventStartPayload;
@@ -55,6 +61,7 @@ public class donClient {
         container.getEventBus().addListener(donClient::onRegisterEntityRenderers);
         container.getEventBus().addListener(donClient::onRegisterStandaloneModels);
         container.getEventBus().addListener(donClient::onAddLayers);
+        NeoForge.EVENT_BUS.addListener(donClient::onScreenOpen);
     }
 
     private static void onRegisterStandaloneModels(ModelEvent.RegisterStandalone event) {
@@ -80,6 +87,8 @@ public class donClient {
         event.registerEntityRenderer(don.BRIGHTEST_ENTITY.get(), BrightestEntityRenderer::new);
         event.registerEntityRenderer(don.LIGHT_WEAVER_ENTITY.get(), LightWeaverRenderer::new);
         event.registerEntityRenderer(don.WALL_WRITING_ENTITY.get(), WallWritingRenderer::new);
+        event.registerEntityRenderer(don.DISPLAY_BLOCK_ENTITY.get(), DisplayBlockRenderer::new);
+        event.registerEntityRenderer(don.WEAVER_GLYPH_ENTITY.get(), WeaverGlyphRenderer::new);
         event.registerBlockEntityRenderer(don.PORTABLE_STAR_BLOCK_ENTITY.get(), PortableStarRenderer::new);
         event.registerBlockEntityRenderer(don.MYSTIC_BRAZIER_BLOCK_ENTITY.get(), MysticBrazierRenderer::new);
     }
@@ -125,6 +134,12 @@ public class donClient {
             (payload, context) -> ClientJournalState.getInstance().handle(payload));
         event.register(WallWritingReadPayload.TYPE,
             (payload, context) -> DialogueSystem.getInstance().playMarkup(java.util.List.of(payload.plain()), null));
+    }
+
+    private static void onScreenOpen(ScreenEvent.Opening event) {
+        if (ModJamNoticeScreen.hasBeenShown()) return;
+        if (!(event.getNewScreen() instanceof TitleScreen)) return;
+        ModJamNoticeScreen.showOnce();
     }
 
     @SubscribeEvent

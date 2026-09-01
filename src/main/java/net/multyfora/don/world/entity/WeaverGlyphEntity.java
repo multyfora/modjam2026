@@ -7,13 +7,12 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Mirror;
@@ -22,39 +21,63 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.multyfora.don.network.WallWritingReadPayload;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.multyfora.don.lightweaver.LightWeaverShapes;
 import org.slf4j.Logger;
 
-public class WallWritingEntity extends Entity {
+public class WeaverGlyphEntity extends Entity {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final EntityDataAccessor<String> DATA_PLAIN = SynchedEntityData.defineId(WallWritingEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<Direction> DATA_FACING = SynchedEntityData.defineId(WallWritingEntity.class, EntityDataSerializers.DIRECTION);
-    private static final EntityDataAccessor<BlockPos> DATA_WALL_POS = SynchedEntityData.defineId(WallWritingEntity.class, EntityDataSerializers.BLOCK_POS);
+    private static final EntityDataAccessor<String> DATA_ENCHANT = SynchedEntityData.defineId(WeaverGlyphEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Direction> DATA_FACING = SynchedEntityData.defineId(WeaverGlyphEntity.class, EntityDataSerializers.DIRECTION);
+    private static final EntityDataAccessor<BlockPos> DATA_WALL_POS = SynchedEntityData.defineId(WeaverGlyphEntity.class, EntityDataSerializers.BLOCK_POS);
+    private static final EntityDataAccessor<Boolean> DATA_RANDOM = SynchedEntityData.defineId(WeaverGlyphEntity.class, EntityDataSerializers.BOOLEAN);
 
-    public WallWritingEntity(EntityType<?> type, Level level) {
+    private boolean randomPlaceholder = true;
+
+    public WeaverGlyphEntity(EntityType<?> type, Level level) {
         super(type, level);
         setNoGravity(true);
     }
 
-    @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(DATA_PLAIN, "");
-        builder.define(DATA_FACING, Direction.NORTH);
-        builder.define(DATA_WALL_POS, BlockPos.ZERO);
+    public boolean isRandomPlaceholder() {
+        return randomPlaceholder;
     }
 
-    public void setWallData(BlockPos wallPos, Direction facing, String plain) {
+    public void setRandomPlaceholder(boolean random) {
+        this.randomPlaceholder = random;
+        entityData.set(DATA_RANDOM, random);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(DATA_ENCHANT, "");
+        builder.define(DATA_FACING, Direction.NORTH);
+        builder.define(DATA_WALL_POS, BlockPos.ZERO);
+        builder.define(DATA_RANDOM, true);
+    }
+
+    public void setWallData(BlockPos wallPos, Direction facing) {
         entityData.set(DATA_WALL_POS, wallPos.immutable());
         entityData.set(DATA_FACING, facing);
-        entityData.set(DATA_PLAIN, plain == null ? "" : plain);
         Vec3 center = Vec3.atCenterOf(wallPos).add(Vec3.atLowerCornerOf(facing.getUnitVec3i()).scale(0.55));
         setPos(center.x, center.y, center.z);
     }
 
-    public String getPlain() {
-        return entityData.get(DATA_PLAIN);
+    public void setWallData(BlockPos wallPos, Direction facing, String enchantId) {
+        setWallData(wallPos, facing);
+        if (enchantId == null || enchantId.isEmpty()) {
+            randomPlaceholder = true;
+            entityData.set(DATA_RANDOM, true);
+            entityData.set(DATA_ENCHANT, "");
+        } else {
+            randomPlaceholder = false;
+            entityData.set(DATA_RANDOM, false);
+            entityData.set(DATA_ENCHANT, enchantId);
+        }
+    }
+
+    public String getEnchantId() {
+        return entityData.get(DATA_ENCHANT);
     }
 
     public Direction getFacing() {
@@ -65,24 +88,53 @@ public class WallWritingEntity extends Entity {
         return entityData.get(DATA_WALL_POS);
     }
 
-    @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        String plain = input.getStringOr("plain", "");
-        int facingIdx = input.getIntOr("facing", Direction.NORTH.get3DDataValue());
-        BlockPos wallPos = input.read("wallPos", BlockPos.CODEC).orElse(BlockPos.ZERO);
-        Direction facing = Direction.from3DDataValue(facingIdx);
-        if (facing.getAxis() == Direction.Axis.Y) facing = Direction.NORTH;
-        entityData.set(DATA_PLAIN, plain);
-        entityData.set(DATA_FACING, facing);
-        entityData.set(DATA_WALL_POS, wallPos);
+    public LightWeaverShapes.WeaverShape getShape() {
+        String id = getEnchantId();
+        if (id == null || id.isEmpty()) return null;
+        for (var shape : LightWeaverShapes.SHAPES) {
+            if (shape.id().equals(id) || shape.enchantment().identifier().toString().equals(id)) {
+                return shape;
+            }
+        }
+        if (id.equals(LightWeaverShapes.EMPTY_SHAPE.id()) || id.equals(LightWeaverShapes.EMPTY_SHAPE.enchantment().identifier().toString())) {
+            return LightWeaverShapes.EMPTY_SHAPE;
+        }
+        return null;
     }
 
-    //please kill me, so i never have to do this again
+    private void tryGenerateRandom() {
+        boolean isRandom = randomPlaceholder;
+        try {
+            isRandom = entityData.get(DATA_RANDOM);
+        } catch (Exception ignored) {}
+        if (!isRandom) return;
+        if (!getEnchantId().isEmpty()) return;
+        if (!(level() instanceof ServerLevel sl)) return;
+        BlockPos wallPos = getWallPos();
+        if (wallPos.equals(BlockPos.ZERO)) return;
+        long seed = sl.getSeed();
+        long posHash = wallPos.asLong();
+        int facingHash = getFacing().get3DDataValue() * 0x9E3779B9;
+        RandomSource random = RandomSource.create(seed ^ posHash ^ facingHash ^ 0x9E3779B97F4A7C15L);
+        if (LightWeaverShapes.SHAPES.isEmpty()) return;
+        var shape = LightWeaverShapes.SHAPES.get(random.nextInt(LightWeaverShapes.SHAPES.size()));
+        entityData.set(DATA_ENCHANT, shape.enchantment().identifier().toString());
+    }
+
     @Override
     public void onAddedToLevel() {
         super.onAddedToLevel();
         fixWallPosIfNeeded();
+        tryGenerateRandom();
     }
+
+    @Override
+    public void tick() {
+        super.tick();
+        fixWallPosIfNeeded();
+        tryGenerateRandom();
+    }
+
     private void fixWallPosIfNeeded() {
         BlockPos wallPos = getWallPos();
         Direction facing = getFacing();
@@ -95,6 +147,9 @@ public class WallWritingEntity extends Entity {
             entityData.set(DATA_WALL_POS, corrected);
             Vec3 newCenter = Vec3.atCenterOf(corrected).add(faceVec.scale(0.55));
             setPos(newCenter.x, newCenter.y, newCenter.z);
+            try {
+                randomPlaceholder = entityData.get(DATA_RANDOM);
+            } catch (Exception ignored) {}
         }
     }
 
@@ -104,7 +159,7 @@ public class WallWritingEntity extends Entity {
         if (!level().getBlockState(towardEntity).isAir()) return towardEntity;
         BlockPos awayFromEntity = expectedWall.relative(facing.getOpposite());
         if (!level().getBlockState(awayFromEntity).isAir()) return awayFromEntity;
-        LOGGER.warn("WallWritingEntity at {} expected a wall block at {} (facing {}) but found air on all three positions along the normal; keeping the derived position", position(), expectedWall, facing);
+        LOGGER.warn("WeaverGlyphEntity at {} expected a wall block at {} (facing {}) but found air on all three positions along the normal; keeping the derived position", position(), expectedWall, facing);
         return expectedWall;
     }
 
@@ -129,8 +184,29 @@ public class WallWritingEntity extends Entity {
     }
 
     @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        String enchant = input.getStringOr("enchant", "");
+        int facingIdx = input.getIntOr("facing", Direction.NORTH.get3DDataValue());
+        BlockPos wallPos = input.read("wallPos", BlockPos.CODEC).orElse(BlockPos.ZERO);
+        Direction facing = Direction.from3DDataValue(facingIdx);
+        if (facing.getAxis() == Direction.Axis.Y) facing = Direction.NORTH;
+        boolean random = input.getBooleanOr("random", enchant == null || enchant.isEmpty());
+        randomPlaceholder = random;
+        entityData.set(DATA_ENCHANT, enchant == null ? "" : enchant);
+        entityData.set(DATA_RANDOM, random);
+        entityData.set(DATA_FACING, facing);
+        entityData.set(DATA_WALL_POS, wallPos);
+    }
+
+    @Override
     protected void addAdditionalSaveData(ValueOutput output) {
-        output.putString("plain", getPlain());
+        if (randomPlaceholder || entityData.get(DATA_RANDOM)) {
+            output.putString("enchant", "");
+            output.putBoolean("random", true);
+        } else {
+            output.putString("enchant", getEnchantId());
+            output.putBoolean("random", false);
+        }
         output.putInt("facing", getFacing().get3DDataValue());
         output.store("wallPos", BlockPos.CODEC, getWallPos());
     }
@@ -173,10 +249,6 @@ public class WallWritingEntity extends Entity {
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
-        if (player instanceof ServerPlayer sp) {
-            PacketDistributor.sendToPlayer(sp, new WallWritingReadPayload(getPlain()));
-            return InteractionResult.SUCCESS;
-        }
         return InteractionResult.PASS;
     }
 }

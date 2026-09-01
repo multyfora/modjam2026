@@ -73,5 +73,6 @@
   "command.don.journal.reset.success": "Journal progress reset.",
   "command.don.journal.unlock.success": "Unlocked journal entry %s.",
   "command.don.journal.unlock.unknown": "No journal entry named %s.",
-  "command.don.journal.unlock.already": "Journal entry %s already discovered."
+  "command.don.journal.unlock.already": "Journal entry %s already discovered.",
+  "toast.don.journal_entry": "New Journal Entry"
 }

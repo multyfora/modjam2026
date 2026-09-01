@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 32,
+    "separation": 16,
+    "salt": 842424742
+  },
+  "structures": [
+    {
+      "structure": "don:hollow_cathedral",
+      "weight": 1
+    }
+  ]
+}
