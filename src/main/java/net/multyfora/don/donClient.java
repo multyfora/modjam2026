@@ -38,6 +38,7 @@ import net.multyfora.don.client.renderer.DisplayBlockRenderer;
 import net.multyfora.don.client.renderer.LightWeaverRenderer;
 import net.multyfora.don.client.renderer.MysticBrazierRenderer;
 import net.multyfora.don.client.renderer.PortableStarRenderer;
+import net.multyfora.don.client.renderer.TimeMachineRenderer;
 import net.multyfora.don.client.renderer.WallWritingRenderer;
 import net.multyfora.don.client.renderer.WeaverGlyphRenderer;
 import net.multyfora.don.network.WallWritingReadPayload;
@@ -95,6 +96,7 @@ public class donClient {
         event.registerEntityRenderer(don.DISPLAY_BLOCK_ENTITY.get(), DisplayBlockRenderer::new);
         event.registerEntityRenderer(don.WEAVER_GLYPH_ENTITY.get(), WeaverGlyphRenderer::new);
         event.registerBlockEntityRenderer(don.PORTABLE_STAR_BLOCK_ENTITY.get(), PortableStarRenderer::new);
+        event.registerBlockEntityRenderer(don.TIME_MACHINE_BLOCK_ENTITY.get(), TimeMachineRenderer::new);
         event.registerBlockEntityRenderer(don.MYSTIC_BRAZIER_BLOCK_ENTITY.get(), MysticBrazierRenderer::new);
     }
 

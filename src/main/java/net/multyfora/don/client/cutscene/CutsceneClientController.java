@@ -53,6 +53,7 @@ public class CutsceneClientController {
 
     public void start(StartCutscenePayload payload) {
         if (active) return;
+        if (net.multyfora.don.client.BetrayedClientState.isBetrayed()) return;
         active = true;
         id = payload.id();
         lineSynced = payload.lineSynced();

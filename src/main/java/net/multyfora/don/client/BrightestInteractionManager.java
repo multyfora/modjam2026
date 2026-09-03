@@ -69,6 +69,7 @@ public class BrightestInteractionManager {
     }
 
     public void openMenu() {
+        if (BetrayedClientState.isBetrayed()) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
         if (FirstContactTransitionState.getInstance().isActive()) return;

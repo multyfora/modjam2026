@@ -3,6 +3,7 @@ package net.multyfora.don.client;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
+import net.multyfora.don.client.BetrayedClientState;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.gui.texture.SDFRectTexture;
 import dev.vfyjxf.taffy.style.AlignItems;
@@ -90,6 +91,7 @@ public class DialogueSystem {
     }
 
     public void playRich(List<RichText> lines, Runnable onLineChange, Runnable onComplete) {
+        if (BetrayedClientState.isBetrayed()) return;
         ensureUI();
         this.queue = lines == null ? List.of() : List.copyOf(lines);
         this.queueIndex = 0;

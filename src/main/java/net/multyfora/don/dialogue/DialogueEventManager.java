@@ -67,6 +67,7 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
     }
 
     public static boolean tryFire(ServerPlayer player, Identifier id) {
+        if (don.hasBetrayed(player)) return false;
         DialogueEventDefinition definition = INSTANCE.definitions.get(id);
         if (definition == null) return false;
         if (definition.once() && isFired(player, id)) return false;
@@ -75,6 +76,7 @@ public class DialogueEventManager extends SimplePreparableReloadListener<Map<Ide
     }
 
     public static boolean runEvent(ServerPlayer player, Identifier id) {
+        if (don.hasBetrayed(player)) return false;
         DialogueEventDefinition definition = INSTANCE.definitions.get(id);
         if (definition == null) return false;
         fire(player, id, definition);

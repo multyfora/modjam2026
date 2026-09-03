@@ -16,6 +16,7 @@ public class DialogueEventClientHandler {
     }
 
     public void handle(DialogueEventStartPayload payload) {
+        if (BetrayedClientState.isBetrayed()) return;
         List<String> lines = List.copyOf(payload.lines());
         if (DialogueSystem.getInstance().isActive()) {
             pending.addLast(lines);
@@ -25,6 +26,10 @@ public class DialogueEventClientHandler {
     }
 
     public void tick() {
+        if (BetrayedClientState.isBetrayed()) {
+            pending.clear();
+            return;
+        }
         if (!pending.isEmpty() && !DialogueSystem.getInstance().isActive()) {
             start(pending.removeFirst());
         }

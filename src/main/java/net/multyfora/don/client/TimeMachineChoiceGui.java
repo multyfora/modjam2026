@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.multyfora.don.network.SealedSunChoicePayload;
 import org.lwjgl.glfw.GLFW;
 
-public final class SealedSunChoiceGui {
+public final class TimeMachineChoiceGui {
     private static final int OUTER_GOLD = 0xFF6B4A20;
     private static final int GOLD_BORDER = 0xFFD4A840;
     private static final int INNER_STONE = 0xFF3A2410;
@@ -29,13 +29,13 @@ public final class SealedSunChoiceGui {
 
     private final BlockPos pos;
 
-    private SealedSunChoiceGui(BlockPos pos) {
+    private TimeMachineChoiceGui(BlockPos pos) {
         this.pos = pos;
     }
 
     public static void open(BlockPos pos) {
         if (BetrayedClientState.isBetrayed()) return;
-        SealedSunChoiceGui gui = new SealedSunChoiceGui(pos);
+        TimeMachineChoiceGui gui = new TimeMachineChoiceGui(pos);
         Minecraft.getInstance().setScreenAndShow(new ModularUIScreen(gui.createUI(), Component.empty()));
     }
 

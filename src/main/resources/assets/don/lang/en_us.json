@@ -14,6 +14,7 @@
   "block.don.mossy_quartz_slab": "Mossy Quartz Slab",
   "block.don.mystic_brazier": "Mystic Brazier",
   "block.don.portable_star": "Portable Star",
+  "block.don.time_machine": "Time Machine",
   "block.don.light_conduit": "Light Conduit",
   "tooltip.don.sealed_singularity.charges": "Charges: %s / %s",
   "tooltip.don.sealed_singularity.mode": "State: %s",
